@@ -28,48 +28,71 @@
 <body>
     <div id="cy"></div>
     <script>
+        var raw_json_from_api = `{
+            "graph": {
+                "nodes": {
+                    "1": {
+                        "label": "Entity 1",
+                        "meta-data": {
+                            "id": "1",
+                            "type": "Entity"
+                        }
+                    },
+                    "2": {
+                        "label": "Dataset 1",
+                        "meta-data": {
+                            "id": "1",
+                            "type": "Dataset"
+                        }
+                    },
+                    "3": {
+                        "label": "Entity 2",
+                        "meta-data": {
+                            "id": "2",
+                            "type": "Entity"
+                        }
+                    },
+                    "4": {
+                        "label": "Entity 3",
+                        "meta-data": {
+                            "id": "3",
+                            "type": "Entity"
+                        }
+                    }
+                },
+                "edges": [
+                    {"source": "2", "target": "1", "relation": "data"},
+                    {"source": "2", "target": "3", "relation": "data"},
+                    {"source": "1", "target": "3", "relation": "deliverable"},
+                    {"source": "4", "target": "1", "relation": "provider"}
+                ]
+            }
+        }`
+
+        // Converting JSON-encoded string to JS object
+        var data_obj = JSON.parse(raw_json_from_api);
+        var graph = data_obj.graph
+        var nodes = graph.nodes
+        var edges = graph.edges
+
+        var value_chain_elements = []
+
+        for (const node in nodes) {
+            node_data = nodes[node]
+            value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data.type === "Entity") ? "#c5fa9c" : "white" } })
+        }
+        start_id = 99999100
+        for (const edge in edges) {
+            edge_data = edges[edge]
+            value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
+            start_id += 1
+        }
+
+        console.log(value_chain_elements)
+
         var cy = cytoscape({
             container: document.getElementById('cy'),
-            elements: [
-                // nodes
-                { data: { id: '1', name: 'Entity 1', color: '#c5fa9c' } },
-                { data: { id: '2', name: 'Dataset 1', color: 'white' } },
-                { data: { id: '3', name: 'Entity 2', color: '#c5fa9c' } },
-                { data: { id: '4', name: 'Entity 3', color: '#c5fa9c' } },
-                // edges
-                {
-                    data: {
-                        id: 'a',
-                        desc: 'data',
-                        source: '2',
-                        target: '1'
-                    }
-                },
-                {
-                    data: {
-                        id: 'b',
-                        desc: 'data',
-                        source: '2',
-                        target: '3'
-                    }
-                },
-                {
-                    data: {
-                        id: 'c',
-                        desc: 'deliverable',
-                        source: '1',
-                        target: '3'
-                    }
-                },
-                {
-                    data: {
-                        id: 'd',
-                        desc: 'provider',
-                        source: '4',
-                        target: '1'
-                    }
-                }
-            ],
+            elements: value_chain_elements,
             style: [
                 {
                     selector: 'node',
@@ -113,7 +136,7 @@
         });
         var layout = cy.layout({
             name: 'circle',
-            padding: 500,
+            padding: 600,
         });
         layout.run();
         function animate() {
