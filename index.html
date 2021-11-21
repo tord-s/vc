@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- https://blog.js.cytoscape.org/2016/05/24/getting-started/ -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TVF Value Chain</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
+        integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
+</head>
+
+<style>
+    #cy {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        background-color: black;
+        top: 0px;
+        left: 0px;
+    }
+</style>
+
+<body>
+    <div id="cy"></div>
+    <script>
+        var cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: [
+                // nodes
+                { data: { id: '1', name: 'Entity 1', color: '#c5fa9c' } },
+                { data: { id: '2', name: 'Dataset 1', color: 'white' } },
+                { data: { id: '3', name: 'Entity 2', color: '#c5fa9c' } },
+                { data: { id: '4', name: 'Entity 3', color: '#c5fa9c' } },
+                // edges
+                {
+                    data: {
+                        id: 'a',
+                        desc: 'data',
+                        source: '2',
+                        target: '1'
+                    }
+                },
+                {
+                    data: {
+                        id: 'b',
+                        desc: 'data',
+                        source: '2',
+                        target: '3'
+                    }
+                },
+                {
+                    data: {
+                        id: 'c',
+                        desc: 'deliverable',
+                        source: '1',
+                        target: '3'
+                    }
+                },
+                {
+                    data: {
+                        id: 'd',
+                        desc: 'provider',
+                        source: '4',
+                        target: '1'
+                    }
+                }
+            ],
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        shape: 'square',
+                        'background-color': 'data(color)',
+                        label: 'data(name)',
+                        color: 'white',
+                        'font-size': '22px',
+                        height: '60px',
+                        width: '60px',
+                        transition: 'all',
+                        'transition-duration': '0.8s',
+                        'transition-timing-function': 'ease-in-out',
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 3,
+                        'line-color': '#c5fa9c',
+                        label: 'data(desc)',
+                        color: 'white',
+                        'font-size': '22px',
+                        'curve-style': 'haystack',
+                        transition: 'all',
+                        'transition-duration': '0.8s',
+                        'transition-timing-function': 'ease-in-out'
+                    }
+                },
+                {
+                    selector: 'label',
+                    style: {
+                        'font-size': '22px',
+                        'text-background-color': 'black',
+                        'color': 'white',
+                        'text-background-opacity': 1,
+                    }
+                }
+            ],
+        });
+        var layout = cy.layout({
+            name: 'circle',
+            padding: 500,
+        });
+        layout.run();
+        function animate() {
+            console.log('delay')
+            var layout = cy.layout({
+                name: 'breadthfirst',
+                animate: true,
+            });
+            layout.run();
+        }
+        setTimeout(
+            animate, 1000);
+
+    </script>
+</body>
+
+</html>
