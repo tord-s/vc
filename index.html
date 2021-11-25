@@ -79,7 +79,7 @@
 
         for (const node in nodes) {
             node_data = nodes[node]
-            value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data.type === "Entity") ? "#c5fa9c" : "white" } })
+            value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta-data'].type === "Entity") ? "#c5fa9c" : "white" } })
         }
         start_id = 99999100
         for (const edge in edges) {
@@ -105,7 +105,7 @@
                         height: '60px',
                         width: '60px',
                         transition: 'all',
-                        'transition-duration': '0.8s',
+                        'transition-duration': '2s',
                         'transition-timing-function': 'ease-in-out',
                     }
                 },
@@ -119,8 +119,10 @@
                         'font-size': '22px',
                         'curve-style': 'haystack',
                         transition: 'all',
-                        'transition-duration': '0.8s',
-                        'transition-timing-function': 'ease-in-out'
+                        'transition-duration': '2s',
+                        'transition-timing-function': 'ease-in-out',
+                        'target-arrow-color': '#ccc',
+                        'target-arrow-shape': 'triangle'
                     }
                 },
                 {
