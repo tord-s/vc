@@ -8,6 +8,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TVF Value Chain</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
         integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -15,17 +16,87 @@
 </head>
 
 <style>
+    @import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
+
+    body,
+    html {
+        font-family: 'Nunito', sans-serif;
+        margin: 0px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .controls {
+        min-height: 20vh;
+        background: black;
+        color: white;
+        border-bottom: 2px solid #ccc;
+        box-sizing: border-box;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
     #cy {
         width: 100%;
-        height: 100%;
-        position: absolute;
+        height: 80vh;
         background-color: black;
         top: 0px;
         left: 0px;
     }
+
+    input[type=checkbox] {
+        visibility: hidden;
+    }
+
+    .checkbox-example {
+        width: 45px;
+        height: 15px;
+        background: #555;
+        margin: 20px 10px;
+        position: relative;
+        display: flex;
+        border-radius: 5px;
+    }
+
+    .checkbox-example label {
+        display: block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        transition: all .5s ease;
+        cursor: pointer;
+        position: absolute;
+        top: -2px;
+        left: -3px;
+        background: #ccc;
+    }
+
+    .checkbox-example input[type=checkbox]:checked+label {
+        left: 27px;
+    }
+
+    .param {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 </style>
 
 <body>
+    <div class="controls">
+        <h1>Controls:</h1>
+        <div class="param">
+            <h4 id="hide_show_data_toggle">Hide data:</h4>
+            <div class="checkbox-example">
+                <input type="checkbox" name="hide_data" id="hide_data">
+                <label for="hide_data"></label>
+            </div>
+        </div>
+    </div>
     <div id="cy"></div>
     <script>
         var raw_json_from_api = `{
@@ -69,6 +140,8 @@
             }
         }`
 
+        const original_start_id = 99999100;
+
         // Converting JSON-encoded string to JS object
         var data_obj = JSON.parse(raw_json_from_api);
         var graph = data_obj.graph
@@ -81,14 +154,12 @@
             node_data = nodes[node]
             value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta-data'].type === "Entity") ? "#c5fa9c" : "white" } })
         }
-        start_id = 99999100
+        start_id = original_start_id
         for (const edge in edges) {
             edge_data = edges[edge]
             value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
             start_id += 1
         }
-
-        console.log(value_chain_elements)
 
         var cy = cytoscape({
             container: document.getElementById('cy'),
@@ -136,13 +207,38 @@
                 }
             ],
         });
+
+        const cb = document.querySelector('#hide_data');
+        cb.onclick = () => {
+            hideData();
+        };
+
+
+        const dataset_nodes = cy.elements('node[color = "white"]')
+        const dataset_edges = cy.edges('[desc = "data"]');
+
+        function hideData() {
+            var checkBox = document.getElementById('hide_data');
+            if (checkBox.checked == true) {
+                cy.remove(dataset_nodes);
+                cy.remove(dataset_edges);
+                document.querySelector('#hide_show_data_toggle').innerHTML = "Show data";
+                animate();
+            }
+            else {
+                cy.add(dataset_nodes);
+                cy.add(dataset_edges);
+                document.querySelector('#hide_show_data_toggle').innerHTML = "Hide data";
+                animate();
+            }
+        }
+
         var layout = cy.layout({
             name: 'circle',
             padding: 600,
         });
         layout.run();
         function animate() {
-            console.log('delay')
             var layout = cy.layout({
                 name: 'breadthfirst',
                 animate: true,
@@ -151,7 +247,6 @@
         }
         setTimeout(
             animate, 1000);
-
     </script>
 </body>
 
