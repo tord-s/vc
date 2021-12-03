@@ -7,8 +7,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TVF Value Chain</title>
-
+    <title>TERRAVERA™ | Visualizing the value chain </title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="./favicon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
         integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -16,79 +17,7 @@
 </head>
 
 <style>
-    @import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
 
-    body,
-    html {
-        font-family: 'Nunito', sans-serif;
-        margin: 0px;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .controls {
-        min-height: 20vh;
-        background: black;
-        color: white;
-        border-bottom: 2px solid #ccc;
-        box-sizing: border-box;
-        font-size: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
-
-    #cy {
-        width: 100%;
-        height: 80vh;
-        background-color: black;
-        top: 0px;
-        left: 0px;
-    }
-
-    input[type=checkbox] {
-        visibility: hidden;
-    }
-
-    .checkbox-example {
-        width: 45px;
-        height: 15px;
-        background: #555;
-        margin: 20px 10px;
-        position: relative;
-        display: flex;
-        border-radius: 5px;
-    }
-
-    .checkbox-example label {
-        display: block;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        transition: all .5s ease;
-        cursor: pointer;
-        position: absolute;
-        top: -2px;
-        left: -3px;
-        background: #ccc;
-    }
-
-    .checkbox-example input[type=checkbox]:checked+label {
-        left: 27px;
-    }
-
-    .param {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .header_h1,
-    #hide_show_data_toggle {
-        margin: 0px;
-    }
 </style>
 
 <body>
@@ -97,7 +26,7 @@
         <div class="param">
             <h4 id="hide_show_data_toggle">Hide data:</h4>
             <div class="checkbox-example">
-                <input type="checkbox" name="hide_data" id="hide_data">
+                <input type="checkbox" name="hide_data" id="hide_data" checked>
                 <label for="hide_data"></label>
             </div>
         </div>
@@ -401,12 +330,11 @@
                     style: {
                         shape: 'square',
                         'background-color': 'data(color)',
-                        label: 'data(name)',
+                        'label': 'data(name)',
                         color: 'white',
                         'font-size': '22px',
                         height: '50px',
                         width: '50px',
-                        transition: 'all',
                         'transition-duration': '2s',
                         'transition-timing-function': 'ease-in-out',
                     }
@@ -416,11 +344,10 @@
                     style: {
                         'width': 3,
                         'line-color': '#c5fa9c',
-                        label: 'data(desc)',
+                        'label': 'data(desc)',
                         color: 'white',
                         'font-size': '22px',
                         'curve-style': 'straight',
-                        transition: 'all',
                         'transition-duration': '2s',
                         'transition-timing-function': 'ease-in-out',
                         'target-arrow-color': '#c5fa9c',
@@ -440,14 +367,15 @@
             ],
         });
 
+
+        const dataset_nodes = cy.elements('node[color = "white"]')
+        const dataset_edges = cy.edges('[desc = "data"]');
+
+        hideData();
         const cb = document.querySelector('#hide_data');
         cb.onclick = () => {
             hideData();
         };
-
-
-        const dataset_nodes = cy.elements('node[color = "white"]')
-        const dataset_edges = cy.edges('[desc = "data"]');
 
         function hideData() {
             var checkBox = document.getElementById('hide_data');
@@ -467,9 +395,10 @@
 
         var layout = cy.layout({
             name: 'circle',
-            padding: 600,
+            padding: 800,
         });
         layout.run();
+
         function animate() {
             var layout = cy.layout({
                 name: 'breadthfirst',

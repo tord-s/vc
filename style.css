@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito&display=swap');
+
+    body,
+    html {
+        font-family: 'Nunito', sans-serif;
+        margin: 0px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .controls {
+        min-height: 20vh;
+        background: black;
+        color: white;
+        border-bottom: 2px solid #ccc;
+        box-sizing: border-box;
+        font-size: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #cy {
+        width: 100%;
+        height: 80vh;
+        background-color: black;
+        top: 0px;
+        left: 0px;
+    }
+
+    input[type=checkbox] {
+        visibility: hidden;
+    }
+
+    .checkbox-example {
+        width: 45px;
+        height: 15px;
+        background: #555;
+        margin: 20px 10px;
+        position: relative;
+        display: flex;
+        border-radius: 5px;
+    }
+
+    .checkbox-example label {
+        display: block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        transition: all .5s ease;
+        cursor: pointer;
+        position: absolute;
+        top: -2px;
+        left: -3px;
+        background: #ccc;
+    }
+
+    .checkbox-example input[type=checkbox]:checked+label {
+        left: 27px;
+    }
+
+    .param {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .header_h1,
+    #hide_show_data_toggle {
+        margin: 0px;
+    }
