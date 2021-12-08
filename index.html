@@ -4,19 +4,19 @@
 <!-- https://blog.js.cytoscape.org/2016/05/24/getting-started/ -->
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERRAVERA™ | Visualizing the value chain </title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="./favicon.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
-        integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
-    <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
-    <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TERRAVERA™ | Visualizing the value chain </title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
+    integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
+  <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+  <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
 </head>
 
 <style>
@@ -24,22 +24,28 @@
 </style>
 
 <body>
-    <div class="controls">
-        <div class="param">
-            <h4 id="hide_show_data_toggle">Hide data:</h4>
-            <div class="checkbox-example">
-                <input type="checkbox" name="hide_data" id="hide_data" checked>
-                <label for="hide_data"></label>
-            </div>
-        </div>
+  <div class="controls">
+    <div class="param">
+      <h4 id="hide_show_data_toggle">Hide data:</h4>
+      <div class="checkbox-example">
+        <input type="checkbox" name="hide_data" id="hide_data" checked>
+        <label for="hide_data"></label>
+      </div>
+      <h4 id="hide_show_data_toggle">Group Entities:</h4>
+      <div class="checkbox-example">
+        <input type="checkbox" name="group_entities" id="group_entities">
+        <label for="group_entities"></label>
+      </div>
     </div>
-    <div id="cy"></div>
-    <script>
-        var raw_json_from_api = `{
+  </div>
+  <div id="cy"></div>
+  <script>
+    var raw_json_from_api = `{
     "graph": {
       "nodes": {
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRRkBGSTGIZWZsYWJhZGBorGdoaGhgaQKUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAVWWFQw=": {
           "label": "Consumer",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRRkBGSTGIZWZsYWJhZGBorGdoaGhgaQKUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAVWWFQw=",
             "entity_id": 12,
@@ -48,6 +54,7 @@
         },
         "DATASET.40": {
           "label": "Fish_farming_defaults",
+          "parent": null,
           "meta_data": {
             "dataset_id": 40,
             "type": "dataset"
@@ -55,6 +62,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSlkC6pBgkYGZsYWJhZGBorGdkYmFhDpJIywFK+OXnpQLZKSBF0SYGsSDxLCC7uhbIyi8Hs2oBSsMU+A==": {
           "label": "Food_distribution",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSlkC6pBgkYGZsYWJhZGBorGdkYmFhDpJIywFK+OXnpQLZKSBF0SYGsSDxLCC7uhbIyi8Hs2oBSsMU+A==",
             "entity_id": 9,
@@ -63,6 +71,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSFkC6pBgkYGZsYWJhZGBorGdsaWIAEk/LAYr75eelAtkpIDXRJgaxIPEsILu6FsjKLwezagE25RS5": {
           "label": "Food_packaging",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSFkC6pBgkYGZsYWJhZGBorGdsaWIAEk/LAYr75eelAtkpIDXRJgaxIPEsILu6FsjKLwezagE25RS5",
             "entity_id": 8,
@@ -71,6 +80,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXS5kC6pBgkYGZsYWJhZGBorGdqbm5iYAmUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUkqFPA=": {
           "label": "Fish_gutting",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXS5kC6pBgkYGZsYWJhZGBorGdqbm5iYAmUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUkqFPA=",
             "entity_id": 7,
@@ -79,6 +89,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSZkC6pBgkYGZsYWJhZGBorGduaGJhYQGUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUmUFPM=": {
           "label": "Fish_farming",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSZkC6pBgkYGZsYWJhZGBorGduaGJhYQGUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUmUFPM=",
             "entity_id": 6,
@@ -87,6 +98,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQT4XSJcUghpmxhYmFkYGhsZ6FkYW5KVA8LQco7peflwpkp4DURJsY6CgYx4KksoDc6logK78czKoFAGzuFTc=": {
           "label": "Central_Feeding_System",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQT4XSJcUghpmxhYmFkYGhsZ6FkYW5KVA8LQco7peflwpkp4DURJsY6CgYx4KksoDc6logK78czKoFAGzuFTc=",
             "entity_id": 1,
@@ -95,6 +107,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSJkC6pBgkYGZsYWJhZGBoomdgaGhgYAmUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUR5FNk=": {
           "label": "Fish_feed_supplier",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSJkC6pBgkYGZsYWJhZGBoomdgaGhgYAmUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUR5FNk=",
             "entity_id": 4,
@@ -103,6 +116,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSxkC6pBgkYGZsYWJhZGBoomdobGxgZASUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAURHFNg=": {
           "label": "Fish_feed",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSJkC6pBgkYGZsYWJhZGBoomdgaGhgYAmUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUR5FNk=",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSxkC6pBgkYGZsYWJhZGBoomdobGxgZASUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAURHFNg=",
             "entity_id": 3,
@@ -112,6 +126,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSxkC6pBgkYGZsYWJhZGBoomdoZGxgaASUSMsBSvjl56UC2SkgRdGxINEsIKu6FsjKLwezagEeohRy": {
           "label": "Fish_feed",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQT4XSJcUghpmxhYmFkYGhsZ6FkYW5KVA8LQco7peflwpkp4DURJsY6CgYx4KksoDc6logK78czKoFAGzuFTc=",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSxkC6pBgkYGZsYWJhZGBoomdoZGxgaASUSMsBSvjl56UC2SkgRdGxINEsIKu6FsjKLwezagEeohRy",
             "entity_id": 3,
@@ -121,6 +136,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRxkBGSTGIZWZsYWJhZGBoomdkamhsbASUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAVYnFQ4=": {
           "label": "Fish_pool_manufacturer",
+          "parent": null,
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRxkBGSTGIZWZsYWJhZGBoomdkamhsbASUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAVYnFQ4=",
             "entity_id": 13,
@@ -129,6 +145,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSpkC6pBgkYGZsYWJhZGBoomdiZGlhYQKUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUlYFPI=": {
           "label": "Fish_pool",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRxkBGSTGIZWZsYWJhZGBoomdkamhsbASUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAVYnFQ4=",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXSpkC6pBgkYGZsYWJhZGBoomdiZGlhYQKUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUlYFPI=",
             "entity_id": 5,
@@ -138,6 +155,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGiiZ2puYGlgDJRIywFK+OXnpQLZKSBF0SYGsSDxLCC7uhbIyi8Hs2oBVyYVFA==": {
           "label": "Fish",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSZkC6pBgkYGZsYWJhZGBorGduaGJhYQGUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUmUFPM=",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGiiZ2puYGlgDJRIywFK+OXnpQLZKSBF0SYGsSDxLCC7uhbIyi8Hs2oBVyYVFA==",
             "entity_id": 11,
@@ -147,6 +165,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGiiZ2piamliCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATLNFLg=": {
           "label": "Fish",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXS5kC6pBgkYGZsYWJhZGBorGdqbm5iYAmUSMsBSvjl56UC2SkgRdEmBrEg8Swgu7oWyMovB7NqAUkqFPA=",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGiiZ2piamliCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATLNFLg=",
             "entity_id": 11,
@@ -156,6 +175,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGisZ2ZpaGlhCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATOzFL0=": {
           "label": "Fish",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGiiZ2piamliCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATLNFLg=",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGisZ2ZpaGlhCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATOzFL0=",
             "entity_id": 11,
@@ -165,6 +185,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGisZ2pqbmwCFE/LAYr75eelAtkpIDXRsSDRLCCruhbIyi8Hs2oBIF0Ufw==": {
           "label": "Fish",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSlkC6pBgkYGZsYWJhZGBorGdkYmFhDpJIywFK+OXnpQLZKSBF0SYGsSDxLCC7uhbIyi8Hs2oBSsMU+A==",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGisZ2pqbmwCFE/LAYr75eelAtkpIDXRsSDRLCCruhbIyi8Hs2oBIF0Ufw==",
             "entity_id": 11,
@@ -301,122 +322,171 @@
         }
       ]
     }
-    }`
+  }`
+    function main() {
 
-        const original_start_id = 99999100;
 
-        // Converting JSON-encoded string to JS object
-        var data_obj = JSON.parse(raw_json_from_api);
-        var graph = data_obj.graph
-        var nodes = graph.nodes
-        var edges = graph.edges
+      const original_start_id = 99999100;
 
-        var value_chain_elements = []
+      // Converting JSON-encoded string to JS object
+      var data_obj = JSON.parse(raw_json_from_api);
+      var graph = data_obj.graph
+      var nodes = graph.nodes
+      var edges = graph.edges
 
+      var value_chain_elements = []
+
+      function groupEntities() {
         for (const node in nodes) {
-            node_data = nodes[node]
-            value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+          node_data = nodes[node]
+          var checkBox = document.getElementById('group_entities');
+          if (checkBox.checked == true) {
+            // value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            value_chain_elements.push({ data: { id: node, parent: node_data.parent, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
             // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4), color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+          }
+          else {
+            value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+          }
         }
-        start_id = original_start_id
-        for (const edge in edges) {
-            edge_data = edges[edge]
-            value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
-            start_id += 1
-        }
+      }
+      groupEntities();
 
-        var cy = cytoscape({
-            container: document.getElementById('cy'),
-            elements: value_chain_elements,
-            style: [
-                {
-                    selector: 'node',
-                    style: {
-                        shape: 'square',
-                        'background-color': 'data(color)',
-                        'label': 'data(name)',
-                        color: 'white',
-                        'font-size': '22px',
-                        height: '50px',
-                        width: '50px',
-                        'transition-duration': '2s',
-                        'transition-timing-function': 'ease-in-out',
-                    }
-                },
-                {
-                    selector: 'edge',
-                    style: {
-                        'width': 3,
-                        'line-color': '#c5fa9c',
-                        'label': 'data(desc)',
-                        color: 'white',
-                        'font-size': '22px',
-                        'curve-style': 'straight',
-                        'transition-duration': '2s',
-                        'transition-timing-function': 'ease-in-out',
-                        'target-arrow-color': '#c5fa9c',
-                        'target-arrow-shape': 'triangle',
-                        'arrow-scale': 2.75
-                    }
-                },
-                {
-                    selector: 'label',
-                    style: {
-                        'font-size': '22px',
-                        'text-background-color': 'black',
-                        'color': 'white',
-                        'text-background-opacity': 1,
-                    }
-                }
-            ],
-        });
+      const ge = document.querySelector('#group_entities');
+      ge.onclick = () => {
+        groupEntities();
+        removeInternalEdges();
+        main();
+      };
+
+      start_id = original_start_id
+      for (const edge in edges) {
+        edge_data = edges[edge]
+        value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
+        start_id += 1
+      }
+
+      var cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: value_chain_elements,
+        style: [
+          {
+            selector: 'node',
+            css: {
+              'label': 'data(name)',
+              'background-color': 'data(color)',
+              'border-color': 'black',
+              'shape': 'circle',
+              height: '50px',
+              width: '50px',
+              shape: 'square'
+            }
+          },
+          {
+            selector: ':parent',
+            css: {
+              'text-valign': 'top',
+              'background-color': '#9dc87c',
+              'text-halign': 'center',
+              'padding': '30px',
+              'shape': 'square',
+            }
+          },
+          {
+            selector: 'edge',
+            css: {
+              color: 'white',
+              'label': 'data(desc)',
+              'curve-style': 'bezier',
+              'target-arrow-shape': 'triangle'
+            }
+          },
+          {
+            selector: 'label',
+            style: {
+              'font-size': '22px',
+              'text-background-color': 'black',
+              'color': 'white',
+              'text-background-opacity': 1,
+            }
+          }
+        ],
+      });
 
 
-        const dataset_nodes = cy.elements('node[color = "white"]')
-        const dataset_edges = cy.edges('[desc = "data"]');
+      const dataset_nodes = cy.elements('node[color = "white"]')
+      const dataset_edges = cy.edges('[desc = "data"]');
 
+      hideData();
+      const cb = document.querySelector('#hide_data');
+      cb.onclick = () => {
         hideData();
-        const cb = document.querySelector('#hide_data');
-        cb.onclick = () => {
-            hideData();
-        };
+      };
 
-        function hideData() {
-            var checkBox = document.getElementById('hide_data');
-            if (checkBox.checked == true) {
-                cy.remove(dataset_nodes);
-                cy.remove(dataset_edges);
-                document.querySelector('#hide_show_data_toggle').innerHTML = "Show data";
-                animate();
-            }
-            else {
-                cy.add(dataset_nodes);
-                cy.add(dataset_edges);
-                document.querySelector('#hide_show_data_toggle').innerHTML = "Hide data";
-                animate();
-            }
+      function hideData() {
+        var checkBox = document.getElementById('hide_data');
+        if (checkBox.checked == true) {
+          cy.remove(dataset_nodes);
+          cy.remove(dataset_edges);
+          document.querySelector('#hide_show_data_toggle').innerHTML = "Show data";
+          animate();
         }
+        else {
+          cy.add(dataset_nodes);
+          cy.add(dataset_edges);
+          document.querySelector('#hide_show_data_toggle').innerHTML = "Hide data";
+          animate();
+        }
+      }
 
+      function getParent(target_id) {
+        for (node in nodes) {
+          const node_data = nodes[node]
+          if (node === target_id) {
+            return node_data.parent
+          }
+        }
+        return -1
+      }
+
+      // Need to check if the edge has a source that is equal to the parent of the target node
+      function removeInternalEdges() {
+        for (let i = 0; i < edges.length; i++) {
+          const edge = edges[i];
+          const source_node = edge.source
+          const target_node = edge.target
+          if (getParent(target_node) === edge.source) {
+            const q = '[target = "' + target_node + '"][source = "' + source_node + '"]'
+            const edge_to_be_removed = cy.edges(q);
+            cy.remove(edge_to_be_removed)
+          }
+        }
+        animate();
+      }
+
+
+      var layout = cy.layout({
+        name: 'circle',
+        padding: 800,
+      });
+      layout.run();
+
+      function animate() {
         var layout = cy.layout({
-            name: 'circle',
-            padding: 800,
+          name: 'dagre',
+          animate: true,
+          rankDir: 'RL',
+          edgeSep: 90,
+          rankSep: 140,
+          nodeDimensionsIncludeLabels: true,
         });
         layout.run();
-
-        function animate() {
-            var layout = cy.layout({
-                name: 'dagre',
-                animate: true,
-                rankDir: 'RL',
-                edgeSep: 250,
-                rankSep: 100,
-                nodeDimensionsIncludeLabels: true,
-            });
-            layout.run();
-        }
-        setTimeout(
-            animate, 1000);
-    </script>
+      }
+      setTimeout(
+        animate, 1000);
+    }
+    main();
+  </script>
 </body>
 
 </html>
