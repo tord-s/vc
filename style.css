@@ -68,6 +68,13 @@
     }
 
     .header_h1,
-    #hide_show_data_toggle {
+    #hide_show_data_toggle,
+    #group_entities_toggle {
         margin: 0px;
+    }
+
+    .explainations {
+        font-size: 13px;
+        line-height: 13px;
+        text-align: center;
     }

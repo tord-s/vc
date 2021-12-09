@@ -31,11 +31,21 @@
         <input type="checkbox" name="hide_data" id="hide_data" checked>
         <label for="hide_data"></label>
       </div>
-      <h4 id="hide_show_data_toggle">Group Entities:</h4>
+      <h4 id="group_entities_toggle">Ungroup Entities:</h4>
       <div class="checkbox-example">
         <input type="checkbox" name="group_entities" id="group_entities">
         <label for="group_entities"></label>
       </div>
+    </div>
+    <div class="explainations">
+      <p><i><b>Transposing</b></i> an Entity means to put the Entity in a new context. For instance when a product moves
+        from
+        one
+        processing step to another.</p>
+      <p>An <i><b>import</b></i> signifies a relationship where one entity depends on another. For instance a car
+        depends
+        on the
+        metal of which it constitutes, or a consumer depends on food.</p>
     </div>
   </div>
   <div id="cy"></div>
@@ -352,11 +362,6 @@
       }
       groupEntities();
 
-      const ge = document.querySelector('#group_entities');
-      ge.onclick = () => {
-        main();
-      };
-
 
       start_id = original_start_id
       for (const edge in edges) {
@@ -385,7 +390,7 @@
             selector: ':parent',
             css: {
               'text-valign': 'top',
-              'background-color': '#9dc87c',
+              'background-color': '#18332f',
               'text-halign': 'center',
               'padding': '30px',
               'shape': 'square',
@@ -394,9 +399,11 @@
           {
             selector: 'edge',
             css: {
-              color: 'white',
+              'line-color': '#c5fa9c',
               'label': 'data(desc)',
               'curve-style': 'bezier',
+              'arrow-scale': '2',
+              'target-arrow-color': '#c5fa9c',
               'target-arrow-shape': 'triangle'
             }
           },
@@ -408,7 +415,22 @@
               'color': 'white',
               'text-background-opacity': 1,
             }
-          }
+          },
+          // {
+          //   selector: ':parent > node > label',
+          //   style: {
+          //     'text-background-color': '#c5fa9c',
+          //     'color': 'black',
+          //   }
+          // },
+          {
+            selector: ':parent > node',
+            style: {
+              'text-background-color': '#18332f',
+              'color': 'white',
+              'background-color': '#c5fa9c'
+            }
+          },
         ],
       });
 
@@ -450,6 +472,7 @@
 
       // Need to check if the edge has a source that is equal to the parent of the target node
       if (document.getElementById('group_entities').checked) {
+        document.querySelector('#group_entities_toggle').innerHTML = "Ungroup Entities";
         for (let i = 0; i < edges.length; i++) {
           const edge = edges[i];
           const source_node = edge.source
@@ -462,11 +485,14 @@
         }
         animate();
       }
+      else {
+        document.querySelector('#group_entities_toggle').innerHTML = "Group Entities";
+      }
 
 
       var layout = cy.layout({
         name: 'circle',
-        padding: 800,
+        padding: 1000,
       });
       layout.run();
 
@@ -484,7 +510,20 @@
       setTimeout(
         animate, 1000);
     }
+
+    //check as default
+    function check() {
+      let inputs = document.getElementById('group_entities');
+      inputs.checked = true;
+    }
+    check()
+
+    const ge = document.querySelector('#group_entities');
     main();
+    ge.onclick = () => {
+      main();
+      ge.checked
+    };
   </script>
 </body>
 
