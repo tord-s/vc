@@ -175,7 +175,7 @@
         },
         "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGisZ2ZpaGlhCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATOzFL0=": {
           "label": "Fish",
-          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGiiZ2piamliCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATLNFLg=",
+          "parent": "INSTANCE.eJyrVi9Tt1Iw1FFQTwXSFkC6pBgkYGZsYWJhZGBorGdsaWIAEk/LAYr75eelAtkpIDXRJgaxIPEsILu6FsjKLwezagE25RS5",
           "meta_data": {
             "instance_id": "eJyrVi9Tt1Iw1FFQTwXRIEZJMYhlZmxhYmFkYGisZ2ZpaGlhCpRIywFK+OXnpQLZKSBF0bEg0Swgq7oWyMovB7NqATOzFL0=",
             "entity_id": 11,
@@ -354,10 +354,9 @@
 
       const ge = document.querySelector('#group_entities');
       ge.onclick = () => {
-        groupEntities();
-        removeInternalEdges();
         main();
       };
+
 
       start_id = original_start_id
       for (const edge in edges) {
@@ -450,7 +449,7 @@
       }
 
       // Need to check if the edge has a source that is equal to the parent of the target node
-      function removeInternalEdges() {
+      if (document.getElementById('group_entities').checked) {
         for (let i = 0; i < edges.length; i++) {
           const edge = edges[i];
           const source_node = edge.source
