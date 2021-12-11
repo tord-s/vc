@@ -27,10 +27,12 @@
     const store = reactive({
       showData: false,
       groupEntities: true,
-      loading: true,
+      loading: 1,
+      loadingNode: true,
       raw_json_from_api: "",
       original_start_id: 99999100,
       value_chain_elements: [],
+      nodeDetailsID: '',
       toggleShowData() {
         this.showData = !this.showData;
       },
@@ -41,7 +43,7 @@
 
     createApp({
       store,
-      start() {
+      inizialize() {
         function main() {
           // Converting JSON-encoded string to JS object
           let data_obj = JSON.parse(store.raw_json_from_api);
@@ -123,21 +125,24 @@
                   'color': 'white',
                   'background-color': '#c5fa9c'
                 }
-              },
+              }
             ],
           });
 
-          const dataset_nodes = cy.elements('node[color = "white"]')
-          const dataset_edges = cy.edges('[desc = "data"]');
+          cy.on('click', 'node', function (evt) {
+            getNodeDetails(this.data());
+          });
 
-          hideData();
-          const cb = document.querySelector('#hide_data');
-          cb.onclick = () => {
+          const data_toggle = document.querySelector('#hide_data');
+          data_toggle.onclick = () => {
             store.toggleShowData();
-            hideData();
+            main();
           };
+          hideData();
 
           function hideData() {
+            const dataset_nodes = cy.elements('node[color = "white"]')
+            const dataset_edges = cy.edges('[desc = "data"]');
             if (!store.showData) {
               cy.remove(dataset_nodes);
               cy.remove(dataset_edges);
@@ -160,27 +165,17 @@
             return -1
           }
 
-          // Need to check if the edge has a source that is equal to the parent of the target node
+          // Need to check if the edge has a source that is equal to the parent of the target node and remove this in the group view
           if (store.groupEntities) {
-            // document.querySelector('#group_entities_toggle').innerHTML = "Ungroup Entities";
             for (let i = 0; i < edges.length; i++) {
               const edge = edges[i];
-              const source_node = edge.source
-              const target_node = edge.target
-              if (getParent(target_node) === edge.source) {
-                const q = '[target = "' + target_node + '"][source = "' + source_node + '"]'
-                const edge_to_be_removed = cy.edges(q);
-                cy.remove(edge_to_be_removed)
+              if (getParent(edge.target) === edge.source) {
+                const q = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
+                cy.remove(cy.edges(q))
               }
             }
             animate();
           }
-
-          var layout = cy.layout({
-            name: 'circle',
-            padding: 1000,
-          });
-          layout.run();
 
           function animate() {
             var layout = cy.layout({
@@ -197,15 +192,6 @@
             animate, 1000);
         }
 
-        //check group entities as default
-        // function check() {
-        //   let inputs = document.getElementById('group_entities');
-        //   inputs.checked = true;
-        // }
-        // check()
-
-
-        // Get data and call main
         async function start() {
           let myPromise = new Promise(function (myResolve, myReject) {
             setTimeout(function () {
@@ -214,8 +200,6 @@
               req.onload = function () {
                 if (req.status == 200) {
                   myResolve(req.response);
-                } else {
-                  myReject("File not Found");
                 }
               };
               req.send();
@@ -226,8 +210,7 @@
             function (value) {
               store.raw_json_from_api = value;
               main();
-              store.loading = false
-              // document.getElementById('loading').style.opacity = 0;
+              store.loading = 0
               document.getElementById('loading').style['z-index'] = -1;
             },
             function (error) { alert(error); }
@@ -235,17 +218,28 @@
         }
         start();
 
-        const ge = document.querySelector('#group_entities');
-        ge.onclick = () => {
+        async function getNodeDetails(id) {
+          let nodePromise = new Promise(function (myResolve, myReject) {
+            store.nodeDetailsID = id;
+            store.loadingNode = true;
+            setTimeout(function () {
+              store.loadingNode = false;
+            }, 1900);
+          });
+        }
+
+        const entity_toggle = document.querySelector('#group_entities');
+        entity_toggle.onclick = () => {
           store.toggleGroupEntities();
           main();
         };
-      }
-    }).mount()
+      },
+    }
+    ).mount()
   </script>
 
 
-  <div id="loading" v-scope v-if="store.loading">
+  <div id="loading" v-scope opacity="store.loading">
     <!-- TVF logo SVG -->
     <svg id="logo_svg" width="287" height="95" viewBox="0 0 287 95" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.7592 65.7788H0V61.3354H27.1592V65.7788H16.4522V95.0002H10.7592V65.7788Z" fill="white"></path>
@@ -303,9 +297,17 @@
         metal of which it constitutes, or a consumer depends on food.</p>
     </div>
   </div>
-  <div id="cy" v-scope @vue:mounted="start()"></div>
-  <script>
-  </script>
+  <div id="cy" v-scope @vue:mounted="inizialize()"></div>
+  <div class="node_details content-fade-up-animation" v-scope v-if="store.nodeDetailsID">
+    <button class="close_node_details" @click="store.nodeDetailsID = ''">Close</button>
+    <div class="loading" v-if="store.loadingNode">
+      <div class="loader"></div>
+    </div>
+    <div class="node_details_content" v-else>
+      <b>Details about {{store.nodeDetailsID.name }}:</b><br />
+      <small>{{store.nodeDetailsID}}</small>
+    </div>
+  </div>
 </body>
 
 </html>
