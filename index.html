@@ -133,12 +133,23 @@
             getNodeDetails(this.data());
           });
 
+          // Don't realyly use this as of now, but was cool
+          cy.on('mouseover', 'node', function (evt) {
+            console.log('Mouseover ', this.data().name)
+          });
+
           const data_toggle = document.querySelector('#hide_data');
           data_toggle.onclick = () => {
             store.toggleShowData();
             main();
           };
           hideData();
+
+          const entity_toggle = document.querySelector('#group_entities');
+          entity_toggle.onclick = () => {
+            store.toggleGroupEntities();
+            main();
+          };
 
           function hideData() {
             const dataset_nodes = cy.elements('node[color = "white"]')
@@ -227,12 +238,6 @@
             }, 1900);
           });
         }
-
-        const entity_toggle = document.querySelector('#group_entities');
-        entity_toggle.onclick = () => {
-          store.toggleGroupEntities();
-          main();
-        };
       },
     }
     ).mount()
@@ -273,21 +278,25 @@
   </div>
   <div class="controls" v-scope>
     <div class="param">
-      <h4 id="group_entities_toggle" v-if="store.showData">Hide data:</h4>
-      <h4 id="group_entities_toggle" v-if="!store.showData">Show data:</h4>
-      <div class="checkbox-example">
-        <input type="checkbox" name="hide_data" id="hide_data" checked="store.showData">
-        <label for="hide_data"></label>
-      </div>
-      <h4 id="group_entities_toggle" v-if="store.groupEntities">Ungroup Entities:</h4>
-      <h4 id="group_entities_toggle" v-if="!store.groupEntities">Group Entities:</h4>
-      <div class="checkbox-example">
-        <input type="checkbox" name="group_entities" id="group_entities" checked="store.groupEntities">
-        <label for="group_entities"></label>
-      </div>
+
+      <h4 id="group_entities_toggle">Data:</h4>
+
+      <label class="switch">
+        <input class="switch-input" type="checkbox" name="hide_data" id="hide_data" unchecked="store.showData" />
+        <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
+      </label>
+
+      <h4 id="group_entities_toggle">Entities:</h4>
+
+      <label class="switch">
+        <input class="switch-input" type="checkbox" name="group_entities" id="group_entities"
+          checked="store.groupEntities">
+        <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
+      </label>
     </div>
     <div class="explainations">
-      <p><i><b>Transposing</b></i> an Entity means to put the Entity in a new context. For instance when a product moves
+      <p><i><b>Transposing</b></i> an Entity means to put the Entity in a new context. For instance when a product
+        moves
         from
         one
         processing step to another.</p>
