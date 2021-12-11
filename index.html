@@ -8,6 +8,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TERRAVERA™ | Visualizing the value chain </title>
+  <meta name="description" content="Visualizing the value chain of Evaluations of Entities in the Platform">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="./favicon.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
@@ -19,12 +20,240 @@
   <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
 </head>
 
-<style>
-
-</style>
-
 <body>
-  <div id="loading">
+  <script type="module">
+    import { createApp, reactive } from 'https://unpkg.com/petite-vue?module'
+
+    const store = reactive({
+      showData: false,
+      groupEntities: true,
+      loading: true,
+      raw_json_from_api: "",
+      original_start_id: 99999100,
+      value_chain_elements: [],
+      toggleShowData() {
+        this.showData = !this.showData;
+      },
+      toggleGroupEntities() {
+        this.groupEntities = !this.groupEntities;
+      }
+    })
+
+    createApp({
+      store,
+      start() {
+        function main() {
+          // Converting JSON-encoded string to JS object
+          let data_obj = JSON.parse(store.raw_json_from_api);
+          console.log(data_obj)
+          let graph = data_obj.graph
+          let nodes = graph.nodes
+          let edges = graph.edges
+          let value_chain_elements = []
+
+          for (const node in nodes) {
+            let node_data = nodes[node]
+            var checkBox = document.getElementById('group_entities');
+            if (checkBox.checked == true) {
+              // value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              value_chain_elements.push({ data: { id: node, parent: node_data.parent, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4), color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            }
+            else {
+              value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            }
+          }
+
+          let start_id = store.original_start_id
+          for (const edge in edges) {
+            let edge_data = edges[edge]
+            value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
+            start_id += 1
+          }
+
+          var cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: value_chain_elements,
+            style: [
+              {
+                selector: 'node',
+                css: {
+                  'label': 'data(name)',
+                  'background-color': 'data(color)',
+                  'border-color': 'black',
+                  'shape': 'circle',
+                  height: '50px',
+                  width: '50px',
+                  shape: 'square'
+                }
+              },
+              {
+                selector: ':parent',
+                css: {
+                  'text-valign': 'top',
+                  'background-color': '#18332f',
+                  'text-halign': 'center',
+                  'padding': '30px',
+                  'shape': 'square',
+                }
+              },
+              {
+                selector: 'edge',
+                css: {
+                  'line-color': '#c5fa9c',
+                  'label': 'data(desc)',
+                  'curve-style': 'bezier',
+                  'arrow-scale': '2',
+                  'target-arrow-color': '#c5fa9c',
+                  'target-arrow-shape': 'triangle'
+                }
+              },
+              {
+                selector: 'label',
+                style: {
+                  'font-size': '22px',
+                  'text-background-color': 'black',
+                  'color': 'white',
+                  'text-background-opacity': 1,
+                }
+              },
+              {
+                selector: ':parent > node',
+                style: {
+                  'text-background-color': '#18332f',
+                  'color': 'white',
+                  'background-color': '#c5fa9c'
+                }
+              },
+            ],
+          });
+
+          const dataset_nodes = cy.elements('node[color = "white"]')
+          const dataset_edges = cy.edges('[desc = "data"]');
+
+          hideData();
+          const cb = document.querySelector('#hide_data');
+          cb.onclick = () => {
+            hideData();
+          };
+
+          function hideData() {
+            var checkBox = document.getElementById('hide_data');
+            if (checkBox.checked == true) {
+              cy.remove(dataset_nodes);
+              cy.remove(dataset_edges);
+              document.querySelector('#hide_show_data_toggle').innerHTML = "Show data";
+              animate();
+            }
+            else {
+              cy.add(dataset_nodes);
+              cy.add(dataset_edges);
+              document.querySelector('#hide_show_data_toggle').innerHTML = "Hide data";
+              animate();
+            }
+          }
+
+          function getParent(target_id) {
+            for (let node in nodes) {
+              let node_data = nodes[node]
+              if (node === target_id) {
+                return node_data.parent
+              }
+            }
+            return -1
+          }
+
+          // Need to check if the edge has a source that is equal to the parent of the target node
+          if (document.getElementById('group_entities').checked) {
+            document.querySelector('#group_entities_toggle').innerHTML = "Ungroup Entities";
+            for (let i = 0; i < edges.length; i++) {
+              const edge = edges[i];
+              const source_node = edge.source
+              const target_node = edge.target
+              if (getParent(target_node) === edge.source) {
+                const q = '[target = "' + target_node + '"][source = "' + source_node + '"]'
+                const edge_to_be_removed = cy.edges(q);
+                cy.remove(edge_to_be_removed)
+              }
+            }
+            animate();
+          }
+          else {
+            document.querySelector('#group_entities_toggle').innerHTML = "Group Entities";
+          }
+
+
+          var layout = cy.layout({
+            name: 'circle',
+            padding: 1000,
+          });
+          layout.run();
+
+          function animate() {
+            var layout = cy.layout({
+              name: 'dagre',
+              animate: true,
+              rankDir: 'RL',
+              edgeSep: 90,
+              rankSep: 140,
+              nodeDimensionsIncludeLabels: true,
+            });
+            layout.run();
+          }
+          setTimeout(
+            animate, 1000);
+        }
+
+        //check group entities as default
+        function check() {
+          let inputs = document.getElementById('group_entities');
+          inputs.checked = true;
+        }
+        check()
+
+
+        // Get data and call main
+        async function start() {
+          let myPromise = new Promise(function (myResolve, myReject) {
+            setTimeout(function () {
+              let req = new XMLHttpRequest();
+              req.open('GET', "eval.json");
+              req.onload = function () {
+                if (req.status == 200) {
+                  myResolve(req.response);
+                } else {
+                  myReject("File not Found");
+                }
+              };
+              req.send();
+            }, 1900);
+          });
+
+          myPromise.then(
+            function (value) {
+              store.raw_json_from_api = value;
+              main();
+              store.loading = false
+              // document.getElementById('loading').style.opacity = 0;
+              document.getElementById('loading').style['z-index'] = -1;
+            },
+            function (error) { alert(error); }
+          );
+        }
+        start();
+
+        const ge = document.querySelector('#group_entities');
+        ge.onclick = () => {
+          main();
+          ge.checked
+        };
+      }
+    }).mount()
+  </script>
+
+
+  <div id="loading" v-scope v-if="store.loading">
+    <!-- TVF logo SVG -->
     <svg id="logo_svg" width="287" height="95" viewBox="0 0 287 95" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M10.7592 65.7788H0V61.3354H27.1592V65.7788H16.4522V95.0002H10.7592V65.7788Z" fill="white"></path>
       <path
@@ -79,216 +308,8 @@
         metal of which it constitutes, or a consumer depends on food.</p>
     </div>
   </div>
-  <div id="cy"></div>
+  <div id="cy" v-scope @vue:mounted="start()"></div>
   <script>
-    let raw_json_from_api;
-    const original_start_id = 99999100;
-    let loading = true;
-
-    function main() {
-
-      // Converting JSON-encoded string to JS object
-      var data_obj = JSON.parse(raw_json_from_api);
-      var graph = data_obj.graph
-      var nodes = graph.nodes
-      var edges = graph.edges
-      var value_chain_elements = []
-
-      for (const node in nodes) {
-        node_data = nodes[node]
-        var checkBox = document.getElementById('group_entities');
-        if (checkBox.checked == true) {
-          // value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-          value_chain_elements.push({ data: { id: node, parent: node_data.parent, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-          // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4), color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-        }
-        else {
-          value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-        }
-      }
-
-      start_id = original_start_id
-      for (const edge in edges) {
-        edge_data = edges[edge]
-        value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
-        start_id += 1
-      }
-
-      var cy = cytoscape({
-        container: document.getElementById('cy'),
-        elements: value_chain_elements,
-        style: [
-          {
-            selector: 'node',
-            css: {
-              'label': 'data(name)',
-              'background-color': 'data(color)',
-              'border-color': 'black',
-              'shape': 'circle',
-              height: '50px',
-              width: '50px',
-              shape: 'square'
-            }
-          },
-          {
-            selector: ':parent',
-            css: {
-              'text-valign': 'top',
-              'background-color': '#18332f',
-              'text-halign': 'center',
-              'padding': '30px',
-              'shape': 'square',
-            }
-          },
-          {
-            selector: 'edge',
-            css: {
-              'line-color': '#c5fa9c',
-              'label': 'data(desc)',
-              'curve-style': 'bezier',
-              'arrow-scale': '2',
-              'target-arrow-color': '#c5fa9c',
-              'target-arrow-shape': 'triangle'
-            }
-          },
-          {
-            selector: 'label',
-            style: {
-              'font-size': '22px',
-              'text-background-color': 'black',
-              'color': 'white',
-              'text-background-opacity': 1,
-            }
-          },
-          {
-            selector: ':parent > node',
-            style: {
-              'text-background-color': '#18332f',
-              'color': 'white',
-              'background-color': '#c5fa9c'
-            }
-          },
-        ],
-      });
-
-      const dataset_nodes = cy.elements('node[color = "white"]')
-      const dataset_edges = cy.edges('[desc = "data"]');
-
-      hideData();
-      const cb = document.querySelector('#hide_data');
-      cb.onclick = () => {
-        hideData();
-      };
-
-      function hideData() {
-        var checkBox = document.getElementById('hide_data');
-        if (checkBox.checked == true) {
-          cy.remove(dataset_nodes);
-          cy.remove(dataset_edges);
-          document.querySelector('#hide_show_data_toggle').innerHTML = "Show data";
-          animate();
-        }
-        else {
-          cy.add(dataset_nodes);
-          cy.add(dataset_edges);
-          document.querySelector('#hide_show_data_toggle').innerHTML = "Hide data";
-          animate();
-        }
-      }
-
-      function getParent(target_id) {
-        for (node in nodes) {
-          const node_data = nodes[node]
-          if (node === target_id) {
-            return node_data.parent
-          }
-        }
-        return -1
-      }
-
-      // Need to check if the edge has a source that is equal to the parent of the target node
-      if (document.getElementById('group_entities').checked) {
-        document.querySelector('#group_entities_toggle').innerHTML = "Ungroup Entities";
-        for (let i = 0; i < edges.length; i++) {
-          const edge = edges[i];
-          const source_node = edge.source
-          const target_node = edge.target
-          if (getParent(target_node) === edge.source) {
-            const q = '[target = "' + target_node + '"][source = "' + source_node + '"]'
-            const edge_to_be_removed = cy.edges(q);
-            cy.remove(edge_to_be_removed)
-          }
-        }
-        animate();
-      }
-      else {
-        document.querySelector('#group_entities_toggle').innerHTML = "Group Entities";
-      }
-
-
-      var layout = cy.layout({
-        name: 'circle',
-        padding: 1000,
-      });
-      layout.run();
-
-      function animate() {
-        var layout = cy.layout({
-          name: 'dagre',
-          animate: true,
-          rankDir: 'RL',
-          edgeSep: 90,
-          rankSep: 140,
-          nodeDimensionsIncludeLabels: true,
-        });
-        layout.run();
-      }
-      setTimeout(
-        animate, 1000);
-    }
-
-    //check group entities as default
-    function check() {
-      let inputs = document.getElementById('group_entities');
-      inputs.checked = true;
-    }
-    check()
-
-
-    // Get data and call main
-    async function start() {
-      let myPromise = new Promise(function (myResolve, myReject) {
-        setTimeout(function () {
-          let req = new XMLHttpRequest();
-          req.open('GET', "eval.json");
-          req.onload = function () {
-            if (req.status == 200) {
-              myResolve(req.response);
-            } else {
-              myReject("File not Found");
-            }
-          };
-          req.send();
-        }, 1900);
-      });
-
-      myPromise.then(
-        function (value) {
-          raw_json_from_api = value;
-          main();
-          document.getElementById('loading').style.opacity = 0;
-          document.getElementById('loading').style['z-index'] = -1;
-        },
-        function (error) { alert(error); }
-      );
-    }
-    start();
-
-    const ge = document.querySelector('#group_entities');
-    ge.onclick = () => {
-      main();
-      ge.checked
-    };
   </script>
 </body>
 
