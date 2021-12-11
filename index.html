@@ -53,8 +53,7 @@
 
           for (const node in nodes) {
             let node_data = nodes[node]
-            var checkBox = document.getElementById('group_entities');
-            if (checkBox.checked == true) {
+            if (store.groupEntities) {
               // value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
               value_chain_elements.push({ data: { id: node, parent: node_data.parent, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
               // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4), color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
@@ -134,21 +133,19 @@
           hideData();
           const cb = document.querySelector('#hide_data');
           cb.onclick = () => {
+            store.toggleShowData();
             hideData();
           };
 
           function hideData() {
-            var checkBox = document.getElementById('hide_data');
-            if (checkBox.checked == true) {
+            if (!store.showData) {
               cy.remove(dataset_nodes);
               cy.remove(dataset_edges);
-              document.querySelector('#hide_show_data_toggle').innerHTML = "Show data";
               animate();
             }
             else {
               cy.add(dataset_nodes);
               cy.add(dataset_edges);
-              document.querySelector('#hide_show_data_toggle').innerHTML = "Hide data";
               animate();
             }
           }
@@ -164,8 +161,8 @@
           }
 
           // Need to check if the edge has a source that is equal to the parent of the target node
-          if (document.getElementById('group_entities').checked) {
-            document.querySelector('#group_entities_toggle').innerHTML = "Ungroup Entities";
+          if (store.groupEntities) {
+            // document.querySelector('#group_entities_toggle').innerHTML = "Ungroup Entities";
             for (let i = 0; i < edges.length; i++) {
               const edge = edges[i];
               const source_node = edge.source
@@ -178,10 +175,6 @@
             }
             animate();
           }
-          else {
-            document.querySelector('#group_entities_toggle').innerHTML = "Group Entities";
-          }
-
 
           var layout = cy.layout({
             name: 'circle',
@@ -205,11 +198,11 @@
         }
 
         //check group entities as default
-        function check() {
-          let inputs = document.getElementById('group_entities');
-          inputs.checked = true;
-        }
-        check()
+        // function check() {
+        //   let inputs = document.getElementById('group_entities');
+        //   inputs.checked = true;
+        // }
+        // check()
 
 
         // Get data and call main
@@ -244,8 +237,8 @@
 
         const ge = document.querySelector('#group_entities');
         ge.onclick = () => {
+          store.toggleGroupEntities();
           main();
-          ge.checked
         };
       }
     }).mount()
@@ -284,16 +277,18 @@
         fill="white"></path>
     </svg>
   </div>
-  <div class="controls">
+  <div class="controls" v-scope>
     <div class="param">
-      <h4 id="hide_show_data_toggle">Hide data:</h4>
+      <h4 id="group_entities_toggle" v-if="store.showData">Hide data:</h4>
+      <h4 id="group_entities_toggle" v-if="!store.showData">Show data:</h4>
       <div class="checkbox-example">
-        <input type="checkbox" name="hide_data" id="hide_data" checked>
+        <input type="checkbox" name="hide_data" id="hide_data" checked="store.showData">
         <label for="hide_data"></label>
       </div>
-      <h4 id="group_entities_toggle">Ungroup Entities:</h4>
+      <h4 id="group_entities_toggle" v-if="store.groupEntities">Ungroup Entities:</h4>
+      <h4 id="group_entities_toggle" v-if="!store.groupEntities">Group Entities:</h4>
       <div class="checkbox-example">
-        <input type="checkbox" name="group_entities" id="group_entities">
+        <input type="checkbox" name="group_entities" id="group_entities" checked="store.groupEntities">
         <label for="group_entities"></label>
       </div>
     </div>
