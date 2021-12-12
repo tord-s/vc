@@ -69,11 +69,11 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        padding-top: 10px
     }
 
     .header_h1,
-    #hide_show_data_toggle,
-    #group_entities_toggle {
+    .group_entities_toggle {
         margin: 0px;
     }
 
@@ -197,18 +197,17 @@
         100% { transform: rotate(360deg);}
     }
     
+    #cy.mouseover { cursor: pointer; }
+
     .switch {
         position: relative;
         display: block;
-        vertical-align: top;
         width: 100px;
         height: 30px;
-        padding: 3px;
-        margin: 0 10px 10px 0;
+        margin: auto 10px;
         background: linear-gradient(to bottom, #eeeeee, #FFFFFF 25px);
         background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF 25px);
         border-radius: 18px;
-        box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
         cursor: pointer;
       }
       .switch-input {
@@ -221,11 +220,10 @@
         position: relative;
         display: block;
         height: inherit;
-        font-size: 10px;
-        text-transform: uppercase;
+        font-size: 14px;
+        /* text-transform: uppercase; */
         background: #eceeef;
         border-radius: inherit;
-        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
       }
       .switch-label:before, .switch-label:after {
         position: absolute;
@@ -240,18 +238,18 @@
       .switch-label:before {
         content: attr(data-off);
         right: 11px;
-        color: #aaaaaa;
+        color: #666;
         text-shadow: 0 1px rgba(255, 255, 255, 0.5);
       }
       .switch-label:after {
         content: attr(data-on);
         left: 11px;
-        color: #FFFFFF;
         text-shadow: 0 1px rgba(0, 0, 0, 0.2);
         opacity: 0;
       }
       .switch-input:checked ~ .switch-label {
-           background: #E1B42B;
+        /* background: #c5fa9c; */
+        background: #18332f;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
       }
       .switch-input:checked ~ .switch-label:before {
@@ -262,8 +260,8 @@
       }
       .switch-handle {
         position: absolute;
-        top: 4px;
-        left: 4px;
+        top: 1px;
+        left: 1px;
         width: 28px;
         height: 28px;
         background: linear-gradient(to bottom, #FFFFFF 40%, #f0f0f0);
@@ -285,11 +283,9 @@
         box-shadow: inset 0 1px rgba(0, 0, 0, 0.02);
       }
       .switch-input:checked ~ .switch-handle {
-        left: 74px;
+        left: 71px;
         box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.2);
       }
-      /* Transition
-          ========================== */
       .switch-label, .switch-handle {
         transition: All 0.3s ease;
         -webkit-transition: All 0.3s ease;
@@ -297,4 +293,4 @@
         -o-transition: All 0.3s ease;
       }
 
-     
+    

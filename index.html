@@ -83,6 +83,7 @@
                   'background-color': 'data(color)',
                   'border-color': 'black',
                   'shape': 'circle',
+                  'cursor': 'pointer',
                   height: '50px',
                   width: '50px',
                   shape: 'square'
@@ -125,6 +126,17 @@
                   'color': 'white',
                   'background-color': '#c5fa9c'
                 }
+              },
+              {
+                selector: 'node.highlight',
+                style: {
+                  'border-color': 'white',
+                  'border-width': '5px',
+                  'font-size': '28px',
+                  "transition-timing-function": 'ease-in-out',
+                  "transition-duration": '0.4s',
+                  "transition-property": 'border-width, border-color, font-size',
+                }
               }
             ],
           });
@@ -134,9 +146,23 @@
           });
 
           // Don't realyly use this as of now, but was cool
-          cy.on('mouseover', 'node', function (evt) {
-            console.log('Mouseover ', this.data().name)
-          });
+          // cy.on('mouseover', 'node', function (evt) {
+          //   console.log('Mouseover ', this.data().name)
+          // });
+
+          // adds cursor on hover over nodes and class highlight
+          cy.on('mouseover', 'node', (event) => {
+            if (event.cy.container()) {
+              event.cy.container().style.cursor = 'pointer';
+            }
+            event.target.addClass('highlight');
+          })
+          cy.on('mouseout', 'node', (event) => {
+            if (event.cy.container()) {
+              event.cy.container().style.cursor = 'default';
+            }
+            event.target.removeClass('highlight');
+          })
 
           const data_toggle = document.querySelector('#hide_data');
           data_toggle.onclick = () => {
@@ -279,19 +305,19 @@
   <div class="controls" v-scope>
     <div class="param">
 
-      <h4 id="group_entities_toggle">Data:</h4>
+      <h4 class="group_entities_toggle">Data:</h4>
 
       <label class="switch">
         <input class="switch-input" type="checkbox" name="hide_data" id="hide_data" unchecked="store.showData" />
         <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
       </label>
 
-      <h4 id="group_entities_toggle">Entities:</h4>
+      <h4 class="group_entities_toggle">Entities:</h4>
 
       <label class="switch">
         <input class="switch-input" type="checkbox" name="group_entities" id="group_entities"
           checked="store.groupEntities">
-        <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
+        <span class="switch-label" data-on="Ungroup" data-off="Group"></span> <span class="switch-handle"></span>
       </label>
     </div>
     <div class="explainations">
