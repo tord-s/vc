@@ -89,7 +89,7 @@
         display: flex;
         transition: all 0.5s;
     }
-    #logo_svg {
+    .loading_logo {
         margin: auto;
         opacity: 1;
         transition: all 0.2s;
