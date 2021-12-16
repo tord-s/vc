@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- https://blog.js.cytoscape.org/2016/05/24/getting-started/ -->
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TERRAVERA™ | Visualizing the value chain </title>
+  <meta name="description" content="Visualizing the value chain of Evaluations of Entities in the Platform">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
+    integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
+  <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+  <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+</head>
+
+<body>
+  <script type="module">
+    import { createApp, reactive } from 'https://unpkg.com/petite-vue?module'
+
+    const store = reactive({
+      showData: false,
+      groupEntities: true,
+      loading: 1,
+      loadingNode: true,
+      raw_json_from_api: "",
+      original_start_id: 99999100,
+      value_chain_elements: [],
+      nodeDetailsID: '',
+      toggleShowData() {
+        this.showData = !this.showData;
+      },
+      toggleGroupEntities() {
+        this.groupEntities = !this.groupEntities;
+      }
+    })
+
+    createApp({
+      store,
+      inizialize() {
+        function main() {
+          // Converting JSON-encoded string to JS object
+          let data_obj = JSON.parse(store.raw_json_from_api);
+          console.log(data_obj)
+          let graph = data_obj.graph
+          let nodes = graph.nodes
+          let edges = graph.edges
+          let value_chain_elements = []
+
+          for (const node in nodes) {
+            let node_data = nodes[node]
+            if (store.groupEntities) {
+              // value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              value_chain_elements.push({ data: { id: node, parent: node_data.parent, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4), color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            }
+            else {
+              value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            }
+          }
+
+          let start_id = store.original_start_id
+          for (const edge in edges) {
+            let edge_data = edges[edge]
+            value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
+            start_id += 1
+          }
+
+          var cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: value_chain_elements,
+            style: [
+              {
+                selector: 'node',
+                css: {
+                  'label': 'data(name)',
+                  'background-color': 'data(color)',
+                  'border-color': 'black',
+                  'shape': 'circle',
+                  'cursor': 'pointer',
+                  height: '50px',
+                  width: '50px',
+                  shape: 'square'
+                }
+              },
+              {
+                selector: ':parent',
+                css: {
+                  'text-valign': 'top',
+                  'background-color': '#18332f',
+                  'text-halign': 'center',
+                  'padding': '30px',
+                  'shape': 'square',
+                }
+              },
+              {
+                selector: 'edge',
+                css: {
+                  'line-color': '#c5fa9c',
+                  'label': 'data(desc)',
+                  'curve-style': 'bezier',
+                  'arrow-scale': '2',
+                  'target-arrow-color': '#c5fa9c',
+                  'target-arrow-shape': 'triangle'
+                }
+              },
+              {
+                selector: 'label',
+                style: {
+                  'font-size': '22px',
+                  'text-background-color': 'black',
+                  'color': 'white',
+                  'text-background-opacity': 1,
+                }
+              },
+              {
+                selector: ':parent > node',
+                style: {
+                  'text-background-color': '#18332f',
+                  'color': 'white',
+                  'background-color': '#c5fa9c'
+                }
+              },
+              {
+                selector: 'node.highlight',
+                style: {
+                  'border-color': 'white',
+                  'border-width': '4px',
+                  // 'font-size': '28px',
+                  "transition-timing-function": 'ease-in-out',
+                  "transition-duration": '0.3s',
+                  "transition-property": 'border-width, border-color, font-size',
+                }
+              }
+            ],
+          });
+
+          cy.on('click', 'node', function (evt) {
+            getNodeDetails(this.data());
+          });
+
+          // Don't realyly use this as of now, but was cool
+          // cy.on('mouseover', 'node', function (evt) {
+          //   console.log('Mouseover ', this.data().name)
+          // });
+
+          // adds cursor on hover over nodes and class highlight
+          cy.on('mouseover', 'node', (event) => {
+            if (event.cy.container()) {
+              event.cy.container().style.cursor = 'pointer';
+            }
+            event.target.addClass('highlight');
+          })
+          cy.on('mouseout', 'node', (event) => {
+            if (event.cy.container()) {
+              event.cy.container().style.cursor = 'default';
+            }
+            event.target.removeClass('highlight');
+          })
+
+          const data_toggle = document.querySelector('#hide_data');
+          data_toggle.onclick = () => {
+            store.toggleShowData();
+            main();
+          };
+          hideData();
+
+          const entity_toggle = document.querySelector('#group_entities');
+          entity_toggle.onclick = () => {
+            store.toggleGroupEntities();
+            main();
+          };
+
+          function hideData() {
+            const dataset_nodes = cy.elements('node[color = "white"]')
+            const dataset_edges = cy.edges('[desc = "data"]');
+            if (!store.showData) {
+              cy.remove(dataset_nodes);
+              cy.remove(dataset_edges);
+              animate();
+            }
+            else {
+              cy.add(dataset_nodes);
+              cy.add(dataset_edges);
+              animate();
+            }
+          }
+
+          function getParent(target_id) {
+            for (let node in nodes) {
+              let node_data = nodes[node]
+              if (node === target_id) {
+                return node_data.parent
+              }
+            }
+            return -1
+          }
+
+          // Need to check if the edge has a source that is equal to the parent of the target node and remove this in the group view
+          if (store.groupEntities) {
+            for (let i = 0; i < edges.length; i++) {
+              const edge = edges[i];
+              if (getParent(edge.target) === edge.source) {
+                const q = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
+                cy.remove(cy.edges(q))
+              }
+            }
+            animate();
+          }
+
+          function animate() {
+            var layout = cy.layout({
+              name: 'dagre',
+              animate: true,
+              rankDir: 'RL',
+              edgeSep: 90,
+              rankSep: 140,
+              nodeDimensionsIncludeLabels: true,
+            });
+            layout.run();
+          }
+          setTimeout(
+            animate, 1000);
+        }
+
+        async function start() {
+          let myPromise = new Promise(function (myResolve, myReject) {
+            setTimeout(function () {
+              let req = new XMLHttpRequest();
+              req.open('GET', "eval.json");
+              req.onload = function () {
+                if (req.status == 200) {
+                  myResolve(req.response);
+                }
+              };
+              req.send();
+            }, 1900);
+          });
+
+          myPromise.then(
+            function (value) {
+              store.raw_json_from_api = value;
+              main();
+              store.loading = 0
+              document.getElementById('loading').style['z-index'] = -1;
+            },
+            function (error) { alert(error); }
+          );
+        }
+        start();
+
+        async function getNodeDetails(id) {
+          let nodePromise = new Promise(function (myResolve, myReject) {
+            store.nodeDetailsID = id;
+            store.loadingNode = true;
+            setTimeout(function () {
+              store.loadingNode = false;
+            }, 1900);
+          });
+        }
+      },
+    }
+    ).mount()
+  </script>
+
+
+  <div id="loading" v-scope opacity="store.loading">
+    <!-- TVF logo SVG -->
+    <img class="loading_logo" src="formue_logo.png" alt="Formuesforvaltning logo">
+  </div>
+  <div class="controls" v-scope>
+    <div class="param">
+
+      <h4 class="group_entities_toggle">Data:</h4>
+
+      <label class="switch">
+        <input class="switch-input" type="checkbox" name="hide_data" id="hide_data" unchecked="store.showData" />
+        <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
+      </label>
+
+      <h4 class="group_entities_toggle">Entities:</h4>
+
+      <label class="switch">
+        <input class="switch-input" type="checkbox" name="group_entities" id="group_entities"
+          checked="store.groupEntities">
+        <span class="switch-label" data-on="Ungroup" data-off="Group"></span> <span class="switch-handle"></span>
+      </label>
+    </div>
+    <div class="explainations">
+      <p><i><b>Transposing</b></i> an Entity means to put the Entity in a new context. For instance when a product
+        moves
+        from
+        one
+        processing step to another.</p>
+      <p>An <i><b>import</b></i> signifies a relationship where one Entity depends on another. For instance a car
+        depends
+        on the
+        metal of which it constitutes, or a consumer depends on food.</p>
+    </div>
+  </div>
+  <div id="cy" v-scope @vue:mounted="inizialize()"></div>
+  <div class="node_details content-fade-up-animation" v-scope v-if="store.nodeDetailsID">
+    <button class="close_node_details" @click="store.nodeDetailsID = ''">Close</button>
+    <div class="loading" v-if="store.loadingNode">
+      <div class="loader"></div>
+    </div>
+    <div class="node_details_content" v-else>
+      <b>Details about {{store.nodeDetailsID.name }}:</b><br />
+      <small>{{store.nodeDetailsID}}</small>
+    </div>
+  </div>
+</body>
+
+</html>
