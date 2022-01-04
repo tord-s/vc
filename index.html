@@ -30,7 +30,8 @@
       raw_json_from_api: "",
       original_start_id: 42000000,
       value_chain_elements: [],
-      nodeDetailsID: '',
+      showDetails: false,
+      nodeDetails: '',
       toggleShowData() {
         this.showData = !this.showData;
       },
@@ -274,14 +275,36 @@
         }
         start();
 
-        async function getNodeDetails(id) {
-          let nodePromise = new Promise(function (myResolve, myReject) {
-            store.nodeDetailsID = id;
-            store.loadingNode = true;
+
+        // https://v02.platform.terravera.world/library/entities/Fish
+        async function getNodeDetails(node) {
+          store.loadingNode = true;
+          store.showDetails = true;
+          let myPromise = new Promise(function (myResolve, myReject) {
             setTimeout(function () {
-              store.loadingNode = false;
+              let req = new XMLHttpRequest();
+              req.open('GET', "https://v02.platform.terravera.world/library/entities/" + node.name);
+              req.onload = function () {
+                if (req.status == 200) {
+                  myResolve(req.response);
+                  store.loadingNode = false;
+                } else {
+                  store.loadingNode = false;
+                  store.nodeDetails = { error: "An error occured" }
+                }
+              };
+              req.send();
             }, 1900);
           });
+
+          myPromise.then(
+            function (value) {
+              store.nodeDetails = JSON.parse(value)
+              console.log(store.nodeDetails)
+              console.log(store.nodeDetails.dataset_pointers.length)
+            },
+            function (error) { alert(error); }
+          );
         }
       },
     }
@@ -314,14 +337,31 @@
     </div>
   </div>
   <div id="cy" v-scope @vue:mounted="inizialize()"></div>
-  <div class="node_details content-fade-up-animation" v-scope v-if="store.nodeDetailsID">
-    <button class="close_node_details" @click="store.nodeDetailsID = ''">Close</button>
+  <div class="node_details content-fade-up-animation" v-scope v-if="store.showDetails">
+    <button class="close_node_details" @click="store.showDetails = false">Close</button>
     <div class="loading" v-if="store.loadingNode">
       <div class="loader"></div>
     </div>
     <div class="node_details_content" v-else>
-      <b>Details about {{store.nodeDetailsID.name }}:</b><br />
-      <small>{{store.nodeDetailsID}}</small>
+      <div v-if="store.nodeDetails.error" class="details_error">
+        An error occured ⚠️<br>
+        <a href="mailto:tord.softeland@terravera.world">
+          Send email to developer 📧
+        </a>
+      </div>
+      <div v-else>
+        <b>Details about the Entity {{store.nodeDetails.name }}:</b>
+        <br>
+        <label v-if="store.nodeDetails.dataset_pointers.length > 0"><br>Dataset Pointers:</label>
+        <div v-for="item in store.nodeDetails.dataset_pointers">
+          {{ item.name }} with default {{ item.default_dataset_name }}</div>
+        <label v-if="store.nodeDetails.entity_inherits.length > 0"><br>Entity Inherits:</label>
+        <div v-for="item in store.nodeDetails.entity_inherits">
+          {{ item.inherited_entity_name }} with priority {{ item.priority }}</div>
+        <br>
+        <label>Entity Business Contributors:</label>
+        <div>Formuesforvaltning</div>
+      </div>
     </div>
   </div>
 </body>
