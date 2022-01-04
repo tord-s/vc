@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- https://blog.js.cytoscape.org/2016/05/24/getting-started/ -->
-
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,7 +8,7 @@
   <title>TERRAVERA™ | Visualizing the value chain </title>
   <meta name="description" content="Visualizing the value chain of Evaluations of Entities in the TERRAVERA™ Platform">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="./favicon.png">
+  <link rel="icon" type="image/png" href="https://tord-s.github.io/vc/favicon.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
     integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -30,7 +28,7 @@
       loading: 1,
       loadingNode: true,
       raw_json_from_api: "",
-      original_start_id: 99999100,
+      original_start_id: 42000000,
       value_chain_elements: [],
       nodeDetailsID: '',
       toggleShowData() {
@@ -47,7 +45,6 @@
         function main() {
           // Converting JSON-encoded string to JS object
           let data_obj = JSON.parse(store.raw_json_from_api);
-          console.log(data_obj)
           let graph = data_obj.graph
           let nodes = graph.nodes
           let edges = graph.edges
@@ -56,19 +53,36 @@
           for (const node in nodes) {
             let node_data = nodes[node]
             if (store.groupEntities) {
-              // value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-              value_chain_elements.push({ data: { id: node, parent: node_data.parent, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-              // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4), color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              // value_chain_elements.push({ data: { id: node, name: node_data.label,
+              // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              value_chain_elements.push({
+                data: {
+                  id: node, parent: node_data.parent,
+                  name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
+                }
+              })
+              // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4),
+              // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
             }
             else {
-              value_chain_elements.push({ data: { id: node, name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+              value_chain_elements.push({
+                data: {
+                  id: node, name: node_data.label,
+                  color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
+                }
+              })
             }
           }
 
           let start_id = store.original_start_id
           for (const edge in edges) {
             let edge_data = edges[edge]
-            value_chain_elements.push({ data: { id: start_id, desc: edge_data.relation, source: edge_data.source, target: edge_data.target } })
+            value_chain_elements.push({
+              data: {
+                id: start_id, desc: edge_data.relation,
+                source: edge_data.source, target: edge_data.target
+              }
+            })
             start_id += 1
           }
 
@@ -86,7 +100,7 @@
                   'cursor': 'pointer',
                   height: '50px',
                   width: '50px',
-                  shape: 'square'
+                  shape: 'square',
                 }
               },
               {
@@ -202,7 +216,8 @@
             return -1
           }
 
-          // Need to check if the edge has a source that is equal to the parent of the target node and remove this in the group view
+          // Need to check if the edge has a source that is equal to the parent of the 
+          // target node and remove this in the group view
           if (store.groupEntities) {
             for (let i = 0; i < edges.length; i++) {
               const edge = edges[i];
@@ -218,15 +233,19 @@
             var layout = cy.layout({
               name: 'dagre',
               animate: true,
+              animationDuration: 800,
+              animationEasing: 'ease-in-out',
               rankDir: 'RL',
-              edgeSep: 90,
-              rankSep: 140,
+              edgeSep: 50,
+              nodeSep: 150,
+              rankSep: 120,
+              padding: 30,
               nodeDimensionsIncludeLabels: true,
             });
             layout.run();
           }
           setTimeout(
-            animate, 1000);
+            animate, 800);
         }
 
         async function start() {
@@ -269,22 +288,18 @@
     ).mount()
   </script>
 
-
   <div id="loading" v-scope opacity="store.loading">
-    <img class="loading_logo" src="formue_logo.png" alt="Formuesforvaltning logo">
+    <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
+      width="420px" height="100px">
   </div>
   <div class="controls" v-scope>
     <div class="param">
-
       <h4 class="group_entities_toggle">Data:</h4>
-
       <label class="switch">
         <input class="switch-input" type="checkbox" name="hide_data" id="hide_data" unchecked="store.showData" />
         <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
       </label>
-
       <h4 class="group_entities_toggle">Entities:</h4>
-
       <label class="switch">
         <input class="switch-input" type="checkbox" name="group_entities" id="group_entities"
           checked="store.groupEntities">
@@ -293,14 +308,9 @@
     </div>
     <div class="explainations">
       <p><i><b>Transposing</b></i> an Entity means to put the Entity in a new context. For instance when a product
-        moves
-        from
-        one
-        processing step to another.</p>
+        moves from one processing step to another.</p>
       <p>An <i><b>import</b></i> signifies a relationship where one Entity depends on another. For instance a car
-        depends
-        on the
-        metal of which it constitutes, or a consumer depends on food.</p>
+        depends on the metal of which it constitutes, or a consumer depends on food.</p>
     </div>
   </div>
   <div id="cy" v-scope @vue:mounted="inizialize()"></div>
