@@ -27,16 +27,49 @@
       groupEntities: true,
       loading: 1,
       loadingNode: true,
-      raw_json_from_api: "",
-      original_start_id: 42000000,
-      value_chain_elements: [],
+      rawJSONFromApi: "",
+      originalStartID: 42000000,
+      valueChainElements: [],
       showDetails: false,
       nodeDetails: '',
+      nodeDetailsName: '',
+      nodeDetailsAssetType: '',
+      apiBasePath: 'https://v02.platform.terravera.world',
       toggleShowData() {
         this.showData = !this.showData;
       },
       toggleGroupEntities() {
         this.groupEntities = !this.groupEntities;
+      },
+      async getNodeDetails() {
+        let asset_type_url = ''
+        if (store.nodeDetailsAssetType === 'entity') {
+          asset_type_url = '/library/entities/'
+        } else if (store.nodeDetailsAssetType === 'dataset') {
+          asset_type_url = '/data/datasets/'
+        }
+        store.loadingNode = true;
+        store.showDetails = true;
+        let getDetails = new Promise(function (detailsResolved, detailsNotFound) {
+          let req = new XMLHttpRequest();
+          req.open('GET', store.apiBasePath + asset_type_url + store.nodeDetailsName);
+          req.onload = function () {
+            if (req.status == 200) {
+              detailsResolved(req.response);
+              store.loadingNode = false;
+            } else {
+              store.loadingNode = false;
+              store.nodeDetails = { error: "An error occured" }
+            }
+          };
+          req.send();
+        });
+        getDetails.then(
+          function (value) {
+            store.nodeDetails = JSON.parse(value)
+          },
+          function (error) { alert(error); }
+        );
       }
     })
 
@@ -45,40 +78,40 @@
       inizialize() {
         function main() {
           // Converting JSON-encoded string to JS object
-          let data_obj = JSON.parse(store.raw_json_from_api);
+          let data_obj = JSON.parse(store.rawJSONFromApi);
           let graph = data_obj.graph
           let nodes = graph.nodes
           let edges = graph.edges
-          let value_chain_elements = []
+          let valueChainElements = []
 
           for (const node in nodes) {
             let node_data = nodes[node]
             if (store.groupEntities) {
-              // value_chain_elements.push({ data: { id: node, name: node_data.label,
+              // valueChainElements.push({ data: { id: node, name: node_data.label,
               // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-              value_chain_elements.push({
+              valueChainElements.push({
                 data: {
-                  id: node, parent: node_data.parent,
+                  id: node, parent: node_data.parent, asset_type: node_data['meta_data'].type,
                   name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
                 }
               })
-              // value_chain_elements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4),
+              // valueChainElements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4),
               // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
             }
             else {
-              value_chain_elements.push({
+              valueChainElements.push({
                 data: {
-                  id: node, name: node_data.label,
+                  id: node, name: node_data.label, asset_type: node_data['meta_data'].type,
                   color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
                 }
               })
             }
           }
 
-          let start_id = store.original_start_id
+          let start_id = store.originalStartID
           for (const edge in edges) {
             let edge_data = edges[edge]
-            value_chain_elements.push({
+            valueChainElements.push({
               data: {
                 id: start_id, desc: edge_data.relation,
                 source: edge_data.source, target: edge_data.target
@@ -89,7 +122,7 @@
 
           var cy = cytoscape({
             container: document.getElementById('cy'),
-            elements: value_chain_elements,
+            elements: valueChainElements,
             style: [
               {
                 selector: 'node',
@@ -157,7 +190,10 @@
           });
 
           cy.on('click', 'node', function (evt) {
-            getNodeDetails(this.data());
+            let asset_type = (this.data().asset_type === "dataset") ? "dataset" : "entity"
+            store.nodeDetailsAssetType = asset_type
+            store.nodeDetailsName = this.data().name
+            store.getNodeDetails();
           });
 
           // Don't realyly use this as of now, but was cool
@@ -265,7 +301,7 @@
 
           myPromise.then(
             function (value) {
-              store.raw_json_from_api = value;
+              store.rawJSONFromApi = value;
               main();
               store.loading = 0
               document.getElementById('loading').style['z-index'] = -1;
@@ -274,39 +310,12 @@
           );
         }
         start();
-
-
-        // https://v02.platform.terravera.world/library/entities/Fish
-        async function getNodeDetails(node) {
-          store.loadingNode = true;
-          store.showDetails = true;
-          let myPromise = new Promise(function (myResolve, myReject) {
-            setTimeout(function () {
-              let req = new XMLHttpRequest();
-              req.open('GET', "https://v02.platform.terravera.world/library/entities/" + node.name);
-              req.onload = function () {
-                if (req.status == 200) {
-                  myResolve(req.response);
-                  store.loadingNode = false;
-                } else {
-                  store.loadingNode = false;
-                  store.nodeDetails = { error: "An error occured" }
-                }
-              };
-              req.send();
-            }, 1900);
-          });
-
-          myPromise.then(
-            function (value) {
-              store.nodeDetails = JSON.parse(value)
-              console.log(store.nodeDetails)
-              console.log(store.nodeDetails.dataset_pointers.length)
-            },
-            function (error) { alert(error); }
-          );
-        }
       },
+      getFurtherDetails(name, asset_type) {
+        store.nodeDetailsName = name;
+        store.nodeDetailsAssetType = asset_type
+        store.getNodeDetails()
+      }
     }
     ).mount()
   </script>
@@ -344,25 +353,38 @@
     </div>
     <div class="node_details_content" v-else>
       <div v-if="store.nodeDetails.error" class="details_error">
-        An error occured ⚠️<br>
+        Unable to get details ⚠️<br>
         <a href="mailto:tord.softeland@terravera.world">
           Send email to developer 📧
         </a>
       </div>
       <div v-else>
-        <b>Details about the Entity {{store.nodeDetails.name }}:</b>
-        <br>
-        <label v-if="store.nodeDetails.dataset_pointers.length > 0"><br>Dataset Pointers:</label>
-        <div v-for="item in store.nodeDetails.dataset_pointers">
-          {{ item.name }} with default {{ item.default_dataset_name }}</div>
-        <label v-if="store.nodeDetails.entity_inherits.length > 0"><br>Entity Inherits:</label>
-        <div v-for="item in store.nodeDetails.entity_inherits">
-          {{ item.inherited_entity_name }} with priority {{ item.priority }}</div>
-        <br>
-        <label>Entity Business Contributors:</label>
-        <div>Formuesforvaltning</div>
+        <div class="top_line_details">
+          <b>{{store.nodeDetails.name }} details:</b>
+          <small>Last edit:
+            <span v-if="item.datetime_last_changed != null">{{item.datetime_last_changed}}</span>
+            <span v-else>N/A</span>
+          </small>
+        </div>
+        <fieldset v-if="store.nodeDetails.entity_inherits.length > 0" class="node_detail">
+          <legend>Entity Inherits:</legend>
+          <div v-for="item in store.nodeDetails.entity_inherits">
+            <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
+              item.inherited_entity_name }}</b> with
+            priority
+            {{
+            item.priority }}
+          </div>
+        </fieldset>
+        <fieldset v-if="store.nodeDetails.dataset_pointers.length > 0" class="node_detail">
+          <legend>Dataset Pointers:</legend>
+          <div v-for=" item in store.nodeDetails.dataset_pointers">
+            {{ item.name }} with default <b class="furter_details"
+              @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name }}</b>
+        </fieldset>
       </div>
     </div>
+  </div>
   </div>
 </body>
 

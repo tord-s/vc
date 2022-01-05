@@ -145,6 +145,23 @@
         color: white;
       }
     
+      .furter_details {
+        text-decoration: underline;
+      }
+      .furter_details:hover {
+        cursor: pointer;
+      }
+
+      fieldset.node_detail {
+        margin-top: 20px;
+        border-color: #c5fa9c;
+      }
+
+      .top_line_details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
       
       @keyframes fadeInUp {
         from {
