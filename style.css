@@ -198,6 +198,9 @@
         color:white;
         cursor: pointer;
     }
+    .go_back_list_btn {
+      right: 52px;
+    }
     .loading {
         display: flex;
         justify-content: center;

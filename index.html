@@ -35,6 +35,7 @@
       nodeDetailsName: '',
       nodeDetailsAssetType: '',
       apiBasePath: 'https://v02.platform.terravera.world',
+      goBackList: [],
       toggleShowData() {
         this.showData = !this.showData;
       },
@@ -42,6 +43,9 @@
         this.groupEntities = !this.groupEntities;
       },
       async getNodeDetails() {
+        if (store.goBackList.length === 0) {
+          store.goBackList.push({ name: store.nodeDetailsName, type: store.nodeDetailsAssetType })
+        }
         let asset_type_url = ''
         if (store.nodeDetailsAssetType === 'entity') {
           asset_type_url = '/library/entities/'
@@ -135,6 +139,8 @@
                   height: '50px',
                   width: '50px',
                   shape: 'square',
+                  'border-width': '4px',
+                  'border-color': 'data(color)'
                 }
               },
               {
@@ -145,6 +151,8 @@
                   'text-halign': 'center',
                   'padding': '30px',
                   'shape': 'square',
+                  'border-width': '4px',
+                  'border-color': '#18332f'
                 }
               },
               {
@@ -165,6 +173,8 @@
                   'text-background-color': 'black',
                   'color': 'white',
                   'text-background-opacity': 1,
+                  'text-margin-y': '-4px',
+                  'z-compound-depth': 'top',
                 }
               },
               {
@@ -184,6 +194,12 @@
                   "transition-timing-function": 'ease-in-out',
                   "transition-duration": '0.3s',
                   "transition-property": 'border-width, border-color, font-size',
+                }
+              },
+              {
+                selector: 'node.highlight+label',
+                style: {
+                  'font-weight': 'bold',
                 }
               }
             ],
@@ -314,6 +330,14 @@
       getFurtherDetails(name, asset_type) {
         store.nodeDetailsName = name;
         store.nodeDetailsAssetType = asset_type
+        store.goBackList.push({ name: name, type: asset_type })
+        store.getNodeDetails()
+      },
+      goBackInDetails() {
+        let backstep = store.goBackList[0]
+        store.nodeDetailsName = backstep.name;
+        store.nodeDetailsAssetType = backstep.type
+        store.goBackList.splice(0, 1)
         store.getNodeDetails()
       }
     }
@@ -347,6 +371,9 @@
   </div>
   <div id="cy" v-scope @vue:mounted="inizialize()"></div>
   <div class="node_details content-fade-up-animation" v-scope v-if="store.showDetails">
+    {{store.goBackList.length}}
+    <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn" @click="goBackInDetails">Go
+      back</button>
     <button class="close_node_details" @click="store.showDetails = false">Close</button>
     <div class="loading" v-if="store.loadingNode">
       <div class="loader"></div>
@@ -360,28 +387,64 @@
       </div>
       <div v-else>
         <div class="top_line_details">
-          <b>{{store.nodeDetails.name }} details:</b>
+          <span><b>{{store.nodeDetails.name}} </b>details:</span>
           <small>Last edit:
-            <span v-if="item.datetime_last_changed != null">{{item.datetime_last_changed}}</span>
+            <span
+              v-if="store.nodeDetails.datetime_last_changed != null">{{store.nodeDetails.datetime_last_changed}}</span>
             <span v-else>N/A</span>
           </small>
         </div>
-        <fieldset v-if="store.nodeDetails.entity_inherits.length > 0" class="node_detail">
-          <legend>Entity Inherits:</legend>
-          <div v-for="item in store.nodeDetails.entity_inherits">
-            <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
-              item.inherited_entity_name }}</b> with
-            priority
-            {{
-            item.priority }}
+        <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
+          <div class="empty"
+            v-if="store.nodeDetails.entity_inherits.length < 1 && store.nodeDetails.dataset_pointers.length < 1">
+            <br>
+            This Entity is empty
           </div>
-        </fieldset>
-        <fieldset v-if="store.nodeDetails.dataset_pointers.length > 0" class="node_detail">
-          <legend>Dataset Pointers:</legend>
-          <div v-for=" item in store.nodeDetails.dataset_pointers">
-            {{ item.name }} with default <b class="furter_details"
-              @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name }}</b>
-        </fieldset>
+          <div class="not_empty_details" v-else>
+            <fieldset v-if="store.nodeDetails.entity_inherits.length > 0" class="node_detail">
+              <legend>Entity Inherits:</legend>
+              <div v-for="item in store.nodeDetails.entity_inherits">
+                <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
+                  item.inherited_entity_name }}</b> with
+                priority
+                {{
+                item.priority }}
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.dataset_pointers.length > 0" class="node_detail">
+              <legend>Dataset Pointers:</legend>
+              <div v-for=" item in store.nodeDetails.dataset_pointers">
+                {{ item.name }} with default <b class="furter_details"
+                  @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name }}</b>
+            </fieldset>
+          </div>
+        </div>
+        <div class="is_dataset" v-if="store.nodeDetailsAssetType === 'dataset'">
+          <div class="empty" v-if="store.nodeDetails.compatible_entities.length < 1 && store.nodeDetails.import_references.length < 1
+             && store.nodeDetails.export_references.length < 1">
+            <br>
+            This Dataset is empty
+          </div>
+          <div class="not_empty_details" v-else>
+            <fieldset v-if="store.nodeDetails.compatible_entities.length > 0" class="node_detail">
+              <legend>Compatible Entities:</legend>
+              <div v-for="item in store.nodeDetails.compatible_entities">
+                <b class="furter_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
+                  item.entity_name }}</b>
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.import_references.length > 0" class="node_detail">
+              <legend>Import references:</legend>
+              <div v-for=" item in store.nodeDetails.import_references">
+                {{ item.symbol }}
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.export_references.length > 0" class="node_detail">
+              <legend>Export references:</legend>
+              <div v-for=" item in store.nodeDetails.export_references">
+                {{ item.symbol }}
+            </fieldset>
+          </div>
+        </div>
       </div>
     </div>
   </div>
