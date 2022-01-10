@@ -52,10 +52,9 @@
         } else if (store.nodeDetailsAssetType === 'dataset') {
           asset_type_url = '/data/datasets/'
         }
-        store.loadingNode = true;
-        store.showDetails = true;
-        let getDetails = new Promise(function (detailsResolved, detailsNotFound) {
-          let req = new XMLHttpRequest();
+        store.loadingNode = store.showDetails = true;
+        const getDetails = new Promise(function (detailsResolved, detailsNotFound) {
+          const req = new XMLHttpRequest();
           req.open('GET', store.apiBasePath + asset_type_url + store.nodeDetailsName);
           req.onload = function () {
             if (req.status == 200) {
@@ -82,8 +81,7 @@
       inizialize() {
         function main() {
           // Converting JSON-encoded string to JS object
-          let data_obj = JSON.parse(store.rawJSONFromApi);
-          let graph = data_obj.graph
+          let graph = JSON.parse(store.rawJSONFromApi).graph
           let nodes = graph.nodes
           let edges = graph.edges
           let valueChainElements = []
@@ -114,7 +112,7 @@
 
           let start_id = store.originalStartID
           for (const edge in edges) {
-            let edge_data = edges[edge]
+            const edge_data = edges[edge]
             valueChainElements.push({
               data: {
                 id: start_id, desc: edge_data.relation,
@@ -261,9 +259,8 @@
 
           function getParent(target_id) {
             for (let node in nodes) {
-              let node_data = nodes[node]
               if (node === target_id) {
-                return node_data.parent
+                return nodes[node].parent
               }
             }
             return -1
@@ -275,8 +272,8 @@
             for (let i = 0; i < edges.length; i++) {
               const edge = edges[i];
               if (getParent(edge.target) === edge.source) {
-                const q = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
-                cy.remove(cy.edges(q))
+                const remove_query = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
+                cy.remove(cy.edges(remove_query))
               }
             }
             animate();
@@ -302,20 +299,20 @@
         }
 
         async function start() {
-          let myPromise = new Promise(function (myResolve, myReject) {
+          const getEval = new Promise(function (gotEval, noEval) {
             setTimeout(function () {
-              let req = new XMLHttpRequest();
+              const req = new XMLHttpRequest();
               req.open('GET', "eval.json");
               req.onload = function () {
                 if (req.status == 200) {
-                  myResolve(req.response);
+                  gotEval(req.response);
                 }
               };
               req.send();
-            }, 1900);
+            }, 1800);
           });
 
-          myPromise.then(
+          getEval.then(
             function (value) {
               store.rawJSONFromApi = value;
               main();
