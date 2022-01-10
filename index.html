@@ -331,10 +331,10 @@
         store.getNodeDetails()
       },
       goBackInDetails() {
-        let backstep = store.goBackList[0]
+        store.goBackList.pop()
+        const backstep = store.goBackList.slice(-1)[0]
         store.nodeDetailsName = backstep.name;
         store.nodeDetailsAssetType = backstep.type
-        store.goBackList.splice(0, 1)
         store.getNodeDetails()
       }
     }
@@ -368,9 +368,8 @@
   </div>
   <div id="cy" v-scope @vue:mounted="inizialize()"></div>
   <div class="node_details content-fade-up-animation" v-scope v-if="store.showDetails">
-    <!-- {{store.goBackList.length}} -->
-    <!-- <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn" @click="goBackInDetails">Go
-      back</button> -->
+    <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn" @click="goBackInDetails">Go
+      back</button>
     <button class="close_node_details" @click="store.showDetails = false">Close</button>
     <div class="loading" v-if="store.loadingNode">
       <div class="loader"></div>
