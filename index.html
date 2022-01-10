@@ -391,13 +391,14 @@
           </small>
         </div>
         <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
-          <div class="empty"
-            v-if="store.nodeDetails.entity_inherits.length < 1 && store.nodeDetails.dataset_pointers.length < 1">
+          <div class="empty" v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length < 1 &&
+             store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length < 1">
             <br>
             This Entity is empty
           </div>
           <div class="not_empty_details" v-else>
-            <fieldset v-if="store.nodeDetails.entity_inherits.length > 0" class="node_detail">
+            <fieldset v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length > 0"
+              class="node_detail">
               <legend>Entity Inherits:</legend>
               <div v-for="item in store.nodeDetails.entity_inherits">
                 <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
@@ -407,7 +408,8 @@
                 item.priority }}
               </div>
             </fieldset>
-            <fieldset v-if="store.nodeDetails.dataset_pointers.length > 0" class="node_detail">
+            <fieldset v-if="store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length > 0"
+              class="node_detail">
               <legend>Dataset Pointers:</legend>
               <div v-for=" item in store.nodeDetails.dataset_pointers">
                 {{ item.name }} with default <b class="furter_details"
@@ -416,25 +418,29 @@
           </div>
         </div>
         <div class="is_dataset" v-if="store.nodeDetailsAssetType === 'dataset'">
-          <div class="empty" v-if="store.nodeDetails.compatible_entities.length < 1 && store.nodeDetails.import_references.length < 1
-             && store.nodeDetails.export_references.length < 1">
+          <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
+          && store.nodeDetails.import_references && store.nodeDetails.import_references.length < 1
+          && store.nodeDetails.export_references && store.nodeDetails.export_references.length < 1">
             <br>
             This Dataset is empty
           </div>
           <div class="not_empty_details" v-else>
-            <fieldset v-if="store.nodeDetails.compatible_entities.length > 0" class="node_detail">
+            <fieldset v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length > 0"
+              class="node_detail">
               <legend>Compatible Entities:</legend>
               <div v-for="item in store.nodeDetails.compatible_entities">
                 <b class="furter_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
                   item.entity_name }}</b>
               </div>
             </fieldset>
-            <fieldset v-if="store.nodeDetails.import_references.length > 0" class="node_detail">
+            <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
+              class="node_detail">
               <legend>Import references:</legend>
               <div v-for=" item in store.nodeDetails.import_references">
                 {{ item.symbol }}
             </fieldset>
-            <fieldset v-if="store.nodeDetails.export_references.length > 0" class="node_detail">
+            <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
+              class="node_detail">
               <legend>Export references:</legend>
               <div v-for=" item in store.nodeDetails.export_references">
                 {{ item.symbol }}
