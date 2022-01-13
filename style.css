@@ -14,6 +14,14 @@
         overflow: hidden;
     }
 
+    .version_number {
+      position: absolute;
+      color: white;
+      right: 0;
+      padding: 6px;
+      font-size: 12px;
+    }
+
     .controls {
         background: black;
         color: white;
