@@ -2,11 +2,11 @@
 
     * {
         box-sizing: border-box;
+        font-family: 'Nunito', sans-serif;
     }
 
     body,
     html {
-        font-family: 'Nunito', sans-serif;
         margin: 0px;
         min-height: 100vh;
         display: flex;
@@ -125,8 +125,8 @@
     /* Node detail view styling start */
     .node_details {
         position: absolute;
-        width: 40vw;
-        left: calc(30vw);
+        width: max(40vw, 350px);
+        left: 30vw;
         background: black;
         color: white;
         bottom: 10px;
@@ -234,6 +234,123 @@
         100% { transform: rotate(360deg);}
     }
     /* Node detail view styling end */
+
+    .info_message {
+      position: absolute;
+      width: max(40vw, 350px);
+      z-index: 1;
+      left: 30vw;
+      top: 10px;
+      height: fit-content;
+      background: black;
+      color: white;
+      bottom: 10px;
+      border: 2px solid #c5fa9c;
+      padding: 10px;
+      animation-duration: 5s;
+      animation-fill-mode: both;
+      -webkit-animation-duration: 5s;
+      -webkit-animation-fill-mode: both;
+      animation-name: fadeInDown;
+      -webkit-animation-name: fadeInDown;
+  }
+
+  @keyframes fadeInDown {
+    0% {
+      transform: translate3d(0,-60px,0)
+    }
+    20% {
+      transform: translate3d(0,0,0);
+      opacity: 1
+    }
+    80% {
+      transform: translate3d(0,0,0);
+      opacity: 1
+    }
+    100% {
+      transform: translate3d(0,-60px,0);
+      opacity: 0;
+    }
+  }
+  
+  @-webkit-keyframes fadeInDown {
+    0% {
+      transform: translate3d(0,-60px,0)
+    }
+    20% {
+      transform: translate3d(0,0,0);
+      opacity: 1
+    }
+    80% {
+      transform: translate3d(0,0,0);
+      opacity: 1
+    }
+    100% {
+      transform: translate3d(0,-60px,0);
+      opacity: 0;
+    }
+  }
+
+    /* Send problem start */
+
+    #contact-form {
+      display: flex;
+      flex-direction: column;
+    }
+    #contact-form > label {
+      margin-top: 10px;
+    }
+    #contact-form input,  #contact-form textarea {
+      background-color: black;
+      color: white;
+      border: 2px solid #c5fa9c;
+      outline: none;
+    }
+    #contact-form textarea {
+      resize: none;
+    }
+    #contact-form .about_you_desc {
+      display: flex;
+      flex-direction: column;
+    }
+    #contact-form .about_you_desc > label {
+      margin-top: 4px;
+    }
+    #contact-form .regarding_desc, #contact-form .about_you_desc {
+      margin: 4px 0px;
+      margin-left: 10px;
+    }
+    #contact-form .regarding_desc > label {
+      margin-right: 10px;
+    }
+    #contact-form select {
+      background: black;
+      color: white;
+      border: 2px solid #c5fa9c;
+    }
+    #contact-form > input[type=submit],  button.place_problem {
+      background-color: black;
+      border: 2px solid #c5fa9c;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.4s;
+    }
+    #contact-form > input[type=submit]  {
+      margin-top: 10px;
+    }
+    button.place_problem {
+      margin-top: 15px;
+      margin-left: 2px;
+      padding: 5px 10px;
+    }
+    button.place_problem:hover,  #contact-form > input[type=submit]:hover {
+      color: black;
+      background-color: #c5fa9c;
+      border: 2px solid #c5fa9c;
+    }
+     /* Send problem end */
+
 
     /* Switch styling start */
     .switch {

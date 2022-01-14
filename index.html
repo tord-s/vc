@@ -16,6 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
   <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
   <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js">
+  </script>
+  <script type="text/javascript">
+    (function () {
+      emailjs.init("user_QuamyBFQke3BdMui1AXOm");
+    })();
+  </script>
 </head>
 
 <body>
@@ -36,6 +44,9 @@
       nodeDetailsAssetType: '',
       apiBasePath: 'https://v02.platform.terravera.world',
       goBackList: [],
+      problemModal: 0,
+      showInfoMessage: false,
+      infoMessage: "",
       toggleShowData() {
         this.showData = !this.showData;
       },
@@ -336,16 +347,36 @@
         store.nodeDetailsName = backstep.name;
         store.nodeDetailsAssetType = backstep.type
         store.getNodeDetails()
+      },
+      sendEmail(e) {
+        emailjs.sendForm('service_p0a6238', 'template_vh5mew7', e.target)
+          .then(function () {
+            store.showInfoMessage = true;
+            store.infoMessage = "Problem successfully added!"
+            store.showDetails = false
+            store.problemModal = false;
+          }, function (error) {
+            store.showInfoMessage = true;
+            store.infoMessage = "An error occured ⚠️"
+            store.showDetails = false
+            store.problemModal = false;
+            console.log('FAILED...', error);
+          });
+      },
+      closeDetails() {
+        store.showDetails = false;
+        store.problemModal = false;
+        store.goBackList = [];
       }
     }
     ).mount()
   </script>
-
+  <div class="version_number">v. 0.1.2</div>
+  <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
       width="420px" height="100px">
   </div>
-  <div class="version_number">v. 0.1.1</div>
   <div class="controls" v-scope>
     <div class="param">
       <h4 class="group_entities_toggle">Data:</h4>
@@ -371,107 +402,151 @@
   <div class="node_details content-fade-up-animation" v-scope v-if="store.showDetails">
     <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn" @click="goBackInDetails">Go
       back</button>
-    <button class="close_node_details" @click="store.showDetails = false">Close</button>
+    <button class="close_node_details" @click="closeDetails">Close</button>
     <div class="loading" v-if="store.loadingNode">
       <div class="loader"></div>
     </div>
     <div class="node_details_content" v-else>
-      <div v-if="store.nodeDetails.error" class="details_error">
-        Unable to get details ⚠️<br>
-        <a href="mailto:tord.softeland@terravera.world">
-          Send email to developer 📧
-        </a>
-      </div>
-      <div v-else>
-        <div class="top_line_details">
-          <span><b>{{store.nodeDetails.name}} </b>details:</span>
-          <small>Last edit:
-            <span
-              v-if="store.nodeDetails.datetime_last_changed != null">{{store.nodeDetails.datetime_last_changed}}</span>
-            <span v-else>N/A</span>
-          </small>
+      <form id="contact-form" v-if="store.problemModal" v-scope @submit.prevent="sendEmail">
+        <label>About you:</label>
+        <div class="about_you_desc">
+          <label>Name</label>
+          <input type="text" name="user_name">
+          <label>Email</label>
+          <input type="email" name="user_email">
         </div>
-        <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
-          <div class="empty" v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length < 1 &&
+        <label>Regarding:</label>
+        <div class="regarding_desc">
+          <label>Name</label>
+          <input type="text" name="regarding_name" v-model="store.nodeDetailsName">
+        </div>
+        <div class="regarding_desc">
+          <label>Asset type</label>
+          <select id="regarding_asset_type" name="regarding_asset_type" v-model="store.nodeDetailsAssetType">
+            <option value="entity">Entity</option>
+            <option value="dataset">Dataset</option>
+          </select>
+        </div>
+        <label>Problem description:</label>
+        <textarea name="message" rows="5"></textarea>
+        <input type="submit" value="Send">
+      </form>
+      <div class="wrapper" v-else>
+        <div v-if="store.nodeDetails.error" class="details_error">
+          Unable to get details ⚠️<br>
+          <a href="mailto:tord.softeland@terravera.world">
+            Send email to developer 📧
+          </a>
+        </div>
+        <div v-else>
+          <div class="top_line_details">
+            <span><b>{{store.nodeDetails.name}} </b>details:</span>
+            <small>Last edit:
+              <span
+                v-if="store.nodeDetails.datetime_last_changed != null">{{store.nodeDetails.datetime_last_changed}}</span>
+              <span v-else>N/A</span>
+            </small>
+          </div>
+          <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
+            <div class="empty" v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length < 1 &&
              store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length < 1">
-            <br>
-            This Entity is empty
+              <br>
+              This Entity is empty
+            </div>
+            <div class="not_empty_details" v-else>
+              <fieldset v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length > 0"
+                class="node_detail">
+                <legend>Entity Inherits:</legend>
+                <div v-for="item in store.nodeDetails.entity_inherits">
+                  <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
+                    item.inherited_entity_name }}</b> with
+                  priority
+                  {{
+                  item.priority }}
+                </div>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length > 0"
+                class="node_detail">
+                <legend>Dataset Pointers:</legend>
+                <div v-for=" item in store.nodeDetails.dataset_pointers">
+                  {{ item.name }} with default <b class="furter_details"
+                    @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name
+                    }}</b>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.entity_imports && store.nodeDetails.entity_imports.length > 0"
+                class="node_detail">
+                <legend>Entity imports:</legend>
+                <div v-for=" item in store.nodeDetails.entity_imports">
+                  Imports <b class="furter_details"
+                    @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
+                    item.deliverable_entity_name }}</b> from <b class="furter_details"
+                    @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{ item.provider_entity_name }}</b>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.entity_exports && store.nodeDetails.entity_exports.length > 0"
+                class="node_detail">
+                <legend>Entity exports:</legend>
+                <div v-for=" item in store.nodeDetails.entity_exports">
+                  Imports <b class="furter_details"
+                    @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
+                    item.deliverable_entity_name }}</b>
+                  <span v-if="item.provider_entity_name">
+                    from <b class="furter_details" @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{
+                      item.provider_entity_name }}</b>
+                  </span>
+                  <span v-else>without provider</span>
+              </fieldset>
+            </div>
           </div>
-          <div class="not_empty_details" v-else>
-            <fieldset v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length > 0"
-              class="node_detail">
-              <legend>Entity Inherits:</legend>
-              <div v-for="item in store.nodeDetails.entity_inherits">
-                <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
-                  item.inherited_entity_name }}</b> with
-                priority
-                {{
-                item.priority }}
-              </div>
-            </fieldset>
-            <fieldset v-if="store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length > 0"
-              class="node_detail">
-              <legend>Dataset Pointers:</legend>
-              <div v-for=" item in store.nodeDetails.dataset_pointers">
-                {{ item.name }} with default <b class="furter_details"
-                  @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name }}</b>
-            </fieldset>
-            <fieldset v-if="store.nodeDetails.entity_imports && store.nodeDetails.entity_imports.length > 0"
-              class="node_detail">
-              <legend>Entity imports:</legend>
-              <div v-for=" item in store.nodeDetails.entity_imports">
-                Imports <b class="furter_details" @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
-                  item.deliverable_entity_name }}</b> from <b class="furter_details"
-                  @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{ item.provider_entity_name }}</b>
-            </fieldset>
-            <fieldset v-if="store.nodeDetails.entity_exports && store.nodeDetails.entity_exports.length > 0"
-              class="node_detail">
-              <legend>Entity exports:</legend>
-              <div v-for=" item in store.nodeDetails.entity_exports">
-                Imports <b class="furter_details" @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
-                  item.deliverable_entity_name }}</b>
-                <span v-if="item.provider_entity_name">
-                  from <b class="furter_details" @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{
-                    item.provider_entity_name }}</b>
-                </span>
-                <span v-else>without provider</span>
-            </fieldset>
-          </div>
-        </div>
-        <div class="is_dataset" v-if="store.nodeDetailsAssetType === 'dataset'">
-          <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
+          <div class="is_dataset" v-if="store.nodeDetailsAssetType === 'dataset'">
+            <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
           && store.nodeDetails.import_references && store.nodeDetails.import_references.length < 1
           && store.nodeDetails.export_references && store.nodeDetails.export_references.length < 1">
-            <br>
-            This Dataset is empty
-          </div>
-          <div class="not_empty_details" v-else>
-            <fieldset v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length > 0"
-              class="node_detail">
-              <legend>Compatible Entities:</legend>
-              <div v-for="item in store.nodeDetails.compatible_entities">
-                <b class="furter_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
-                  item.entity_name }}</b>
-              </div>
-            </fieldset>
-            <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
-              class="node_detail">
-              <legend>Import references:</legend>
-              <div v-for=" item in store.nodeDetails.import_references">
-                {{ item.symbol }}
-            </fieldset>
-            <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
-              class="node_detail">
-              <legend>Export references:</legend>
-              <div v-for=" item in store.nodeDetails.export_references">
-                {{ item.symbol }}
-            </fieldset>
+              <br>
+              This Dataset is empty
+            </div>
+            <div class="not_empty_details" v-else>
+              <fieldset v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length > 0"
+                class="node_detail">
+                <legend>Compatible Entities:</legend>
+                <div v-for="item in store.nodeDetails.compatible_entities">
+                  <b class="furter_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
+                    item.entity_name }}</b>
+                </div>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
+                class="node_detail">
+                <legend>Import references:</legend>
+                <div v-for=" item in store.nodeDetails.import_references">
+                  {{ item.symbol }}
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
+                class="node_detail">
+                <legend>Export references:</legend>
+                <div v-for=" item in store.nodeDetails.export_references">
+                  {{ item.symbol }}
+              </fieldset>
+            </div>
           </div>
         </div>
+        <button class="place_problem" @click="store.problemModal = true">Place request for more details</button>
       </div>
     </div>
   </div>
-  </div>
 </body>
+
+<script>
+  // place problem through email
+  // window.onload = function () {
+  //   document.getElementById('contact-form').addEventListener('submit', function (event) {
+  //     event.preventDefault();
+  //     emailjs.sendForm('service_p0a6238', 'template_vh5mew7', this)
+  //       .then(function () {
+  //         console.log('SUCCESS!');
+  //       }, function (error) {
+  //         console.log('FAILED...', error);
+  //       });
+  //   });
+  // }
+</script>
 
 </html>
