@@ -136,6 +136,10 @@
         word-wrap: break-word;
     }
 
+    .node_details a {
+      color:white;
+    }
+
     .content-fade-up-animation {
         animation-duration: 0.8s;
         animation-fill-mode: both;
@@ -340,7 +344,7 @@
       margin-top: 10px;
     }
     button.place_problem {
-      margin-top: 15px;
+      margin-top: 20px;
       margin-left: 2px;
       padding: 5px 10px;
     }

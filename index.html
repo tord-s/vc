@@ -371,7 +371,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.1.2</div>
+  <div class="version_number">v. 0.1.3</div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
@@ -475,7 +475,7 @@
               </fieldset>
               <fieldset v-if="store.nodeDetails.entity_imports && store.nodeDetails.entity_imports.length > 0"
                 class="node_detail">
-                <legend>Entity imports:</legend>
+                <legend>Entity Imports:</legend>
                 <div v-for=" item in store.nodeDetails.entity_imports">
                   Imports <b class="furter_details"
                     @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
@@ -484,7 +484,7 @@
               </fieldset>
               <fieldset v-if="store.nodeDetails.entity_exports && store.nodeDetails.entity_exports.length > 0"
                 class="node_detail">
-                <legend>Entity exports:</legend>
+                <legend>Entity Exports:</legend>
                 <div v-for=" item in store.nodeDetails.entity_exports">
                   Imports <b class="furter_details"
                     @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
@@ -496,6 +496,10 @@
                   <span v-else>without provider</span>
               </fieldset>
             </div>
+            <fieldset class="node_detail">
+              <legend>Entity Business Contributors:</legend>
+              <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+            </fieldset>
           </div>
           <div class="is_dataset" v-if="store.nodeDetailsAssetType === 'dataset'">
             <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
@@ -515,17 +519,21 @@
               </fieldset>
               <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
                 class="node_detail">
-                <legend>Import references:</legend>
+                <legend>Import References:</legend>
                 <div v-for=" item in store.nodeDetails.import_references">
                   {{ item.symbol }}
               </fieldset>
               <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
                 class="node_detail">
-                <legend>Export references:</legend>
+                <legend>Export References:</legend>
                 <div v-for=" item in store.nodeDetails.export_references">
                   {{ item.symbol }}
               </fieldset>
             </div>
+            <fieldset class="node_detail">
+              <legend>Dataset Business Contributors:</legend>
+              <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+            </fieldset>
           </div>
         </div>
         <button class="place_problem" @click="store.problemModal = true">Place request for more details</button>
