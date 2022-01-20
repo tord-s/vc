@@ -157,10 +157,10 @@
         color: white;
       }
     
-      .furter_details {
+      .further_details {
         text-decoration: underline;
       }
-      .furter_details:hover {
+      .further_details:hover {
         cursor: pointer;
       }
 
@@ -486,3 +486,23 @@
         background: #c5fa9c99; 
       }
     
+
+
+
+      .all_entity_indicators {
+      }
+
+      .entity_indicator_details {
+        
+      }
+
+      .view_indicator_details {
+        background: black;
+        color: white;
+        border: 1px solid #c5fa9c;
+      }
+      .entity_indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+      }

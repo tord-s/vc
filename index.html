@@ -47,6 +47,7 @@
       problemModal: 0,
       showInfoMessage: false,
       infoMessage: "",
+      viewIndicatorDetailsName: "",
       toggleShowData() {
         this.showData = !this.showData;
       },
@@ -81,6 +82,7 @@
         getDetails.then(
           function (value) {
             store.nodeDetails = JSON.parse(value)
+            console.log(store.nodeDetails)
           },
           function (error) { alert(error); }
         );
@@ -460,11 +462,30 @@
               This Entity is empty
             </div>
             <div class="not_empty_details" v-else>
+              <fieldset v-if="store.nodeDetails.entity_indicators && store.nodeDetails.entity_indicators.length > 0"
+                class="node_detail all_entity_indicators">
+                <legend>Entity Indicators:</legend>
+                <div v-for="item in store.nodeDetails.entity_indicators">
+                  <div class="entity_indicator">
+                    <b class="further_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">
+                      {{item.indicator_name }} </b>
+                    <button class="view_indicator_details" v-if="item.indicator_name !== store.viewIndicatorDetailsName"
+                      @click="store.viewIndicatorDetailsName = item.indicator_name">Details</button>
+                    <button class="view_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName"
+                      @click="store.viewIndicatorDetailsName = ''">Hide</button>
+                  </div>
+                  <div class="entity_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName">
+                    <div class="individual">Expression: {{item.expression }}</div>
+                    <div class="individual">Mode: {{item.mode }}</div>
+                    <div class="individual">Fidelity Level: {{item.max_fidelity_level }}</div>
+                  </div>
+                </div>
+              </fieldset>
               <fieldset v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length > 0"
                 class="node_detail">
                 <legend>Entity Inherits:</legend>
                 <div v-for="item in store.nodeDetails.entity_inherits">
-                  <b class="furter_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
+                  <b class="further_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
                     item.inherited_entity_name }}</b> with
                   priority
                   {{
@@ -475,7 +496,7 @@
                 class="node_detail">
                 <legend>Dataset Pointers:</legend>
                 <div v-for=" item in store.nodeDetails.dataset_pointers">
-                  {{ item.name }} with default <b class="furter_details"
+                  {{ item.name }} with default <b class="further_details"
                     @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name
                     }}</b>
               </fieldset>
@@ -483,20 +504,20 @@
                 class="node_detail">
                 <legend>Entity Imports:</legend>
                 <div v-for=" item in store.nodeDetails.entity_imports">
-                  Imports <b class="furter_details"
+                  Imports <b class="further_details"
                     @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
-                    item.deliverable_entity_name }}</b> from <b class="furter_details"
+                    item.deliverable_entity_name }}</b> from <b class="further_details"
                     @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{ item.provider_entity_name }}</b>
               </fieldset>
               <fieldset v-if="store.nodeDetails.entity_exports && store.nodeDetails.entity_exports.length > 0"
                 class="node_detail">
                 <legend>Entity Exports:</legend>
                 <div v-for=" item in store.nodeDetails.entity_exports">
-                  Imports <b class="furter_details"
+                  Imports <b class="further_details"
                     @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
                     item.deliverable_entity_name }}</b>
                   <span v-if="item.provider_entity_name">
-                    from <b class="furter_details" @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{
+                    from <b class="further_details" @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{
                       item.provider_entity_name }}</b>
                   </span>
                   <span v-else>without provider</span>
@@ -519,7 +540,7 @@
                 class="node_detail">
                 <legend>Compatible Entities:</legend>
                 <div v-for="item in store.nodeDetails.compatible_entities">
-                  <b class="furter_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
+                  <b class="further_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
                     item.entity_name }}</b>
                 </div>
               </fieldset>
