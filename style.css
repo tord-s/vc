@@ -134,6 +134,11 @@
         padding: 10px;
         transition: 0.8s all;
         word-wrap: break-word;
+        overflow-y: scroll;
+    }
+
+    .node_details_content {
+      max-height: 80vh;
     }
 
     .node_details a {
@@ -199,12 +204,10 @@
       }
 
     .close_node_details {
-        position: absolute;
-        right: -2px;
         border: 2px solid #c5fa9c;
         background-color: #c5fa9c;
-        height: 35px;
-        top: -36px;
+        min-width: fit-content;
+        margin-left: 2px;
     }
     .close_node_details:hover {
         background-color: black;
@@ -362,6 +365,7 @@
     button.place_problem {
       margin-top: 20px;
       margin-left: 2px;
+      margin-bottom: 10px;
       padding: 5px 10px;
     }
     button.place_problem:hover,  #contact-form > input[type=submit]:hover {
@@ -537,4 +541,13 @@
 
     .indicator_configuration > .config_point > span {
       border-bottom: 1px solid #c5fa9c;
+    }
+
+    .node_details_node_name {
+      margin-top: 10px;
+      margin-bottom: 0px;
+    }
+
+    .not_empty_details fieldset.node_detail:first-of-type {
+      margin-top: 10px;
     }

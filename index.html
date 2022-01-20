@@ -376,7 +376,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.1.4</div>
+  <div class="version_number">v. 0.1.5</div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
@@ -405,9 +405,6 @@
   </div>
   <div id="cy" v-scope @vue:mounted="inizialize()"></div>
   <div class="node_details content-fade-up-animation" v-scope v-if="store.showDetails">
-    <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn" @click="goBackInDetails">Go
-      back</button>
-    <button class="close_node_details" @click="closeDetails">Close</button>
     <div class="loading" v-if="store.loadingNode">
       <div class="loader"></div>
     </div>
@@ -451,7 +448,12 @@
         </div>
         <div v-else>
           <div class="top_line_details">
-            <span><b>{{store.nodeDetails.name}} </b>details:</span>
+            <div class="btns">
+              <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn"
+                @click="goBackInDetails">Go
+                back</button>
+              <button class="close_node_details" @click="closeDetails">Close</button>
+            </div>
             <small>Last edit:
               <span
                 v-if="store.nodeDetails.datetime_last_changed != null">{{store.nodeDetails.datetime_last_changed}}</span>
@@ -461,6 +463,7 @@
               <span v-else>N/A</span>
             </small>
           </div>
+          <p class="node_details_node_name"><b>{{store.nodeDetails.name}} </b>details:</p>
           <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
             <div class="empty" v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length < 1 &&
              store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length < 1">
