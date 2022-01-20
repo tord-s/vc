@@ -64,6 +64,9 @@
         } else if (store.nodeDetailsAssetType === 'dataset') {
           asset_type_url = '/data/datasets/'
         }
+        else if (store.nodeDetailsAssetType === 'indicator') {
+          asset_type_url = '/library/indicators/'
+        }
         store.loadingNode = store.showDetails = true;
         const getDetails = new Promise(function (detailsResolved, detailsNotFound) {
           const req = new XMLHttpRequest();
@@ -452,6 +455,9 @@
             <small>Last edit:
               <span
                 v-if="store.nodeDetails.datetime_last_changed != null">{{store.nodeDetails.datetime_last_changed}}</span>
+              <span v-else-if="store.nodeDetails.last_changed != null">
+                <start>{{store.nodeDetails.last_changed}}</start>
+              </span>
               <span v-else>N/A</span>
             </small>
           </div>
@@ -467,18 +473,18 @@
                 <legend>Entity Indicators:</legend>
                 <div v-for="item in store.nodeDetails.entity_indicators">
                   <div class="entity_indicator">
-                    <b class="further_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">
+                    <b class="further_details" @click="getFurtherDetails(item.indicator_name, 'indicator')">
                       {{item.indicator_name }} </b>
                     <button class="view_indicator_details" v-if="item.indicator_name !== store.viewIndicatorDetailsName"
-                      @click="store.viewIndicatorDetailsName = item.indicator_name">Details</button>
+                      @click="store.viewIndicatorDetailsName = item.indicator_name">+</button>
                     <button class="view_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName"
-                      @click="store.viewIndicatorDetailsName = ''">Hide</button>
+                      @click="store.viewIndicatorDetailsName = ''">-</button>
                   </div>
-                  <div class="entity_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName">
-                    <div class="individual">Expression: {{item.expression }}</div>
-                    <div class="individual">Mode: {{item.mode }}</div>
-                    <div class="individual">Fidelity Level: {{item.max_fidelity_level }}</div>
-                  </div>
+                  <ul class="entity_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName">
+                    <li class="individual"><span>Expression:</span> {{item.expression }}</li>
+                    <li class="individual"><span>Mode:</span> {{item.mode }}</li>
+                    <li class="individual"><span>Fidelity Level:</span> {{item.max_fidelity_level }}</li>
+                  </ul>
                 </div>
               </fieldset>
               <fieldset v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length > 0"
@@ -561,6 +567,42 @@
               <legend>Dataset Business Contributors:</legend>
               <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
             </fieldset>
+          </div>
+          <div class="is_indicator" v-if="store.nodeDetailsAssetType === 'indicator'">
+            <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
+            && store.nodeDetails.import_references && store.nodeDetails.import_references.length < 1
+            && store.nodeDetails.export_references && store.nodeDetails.export_references.length < 1">
+              <br>
+              This Indicator is empty
+            </div>
+            <div class="not_empty_details" v-else>
+              <fieldset v-if="store.nodeDetails.contexts && store.nodeDetails.contexts.length > 0" class="node_detail">
+                <legend>Contexts:</legend>
+                <div v-for="item in store.nodeDetails.contexts" class="all_indicator_contexts">
+                  <span class="indicator_context">{{ item }}</span>
+                </div>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.description" class="node_detail">
+                <legend>Description:</legend>
+                {{ store.nodeDetails.description }}
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.aggregation_mode" class="node_detail indicator_configuration">
+                <legend>Configuration:</legend>
+                <div class="config_point">
+                  <span>Aggregation Mode:</span> {{ store.nodeDetails.aggregation_mode }}
+                </div>
+                <div class="config_point">
+                  <span>Data Type:</span> {{ store.nodeDetails.data_type }}
+                </div>
+                <div class="config_point">
+                  <span>Sustainablity Polarity:</span> {{ store.nodeDetails.sustainability_polarity }}
+                </div>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.references" class="node_detail">
+                <legend>References:</legend>
+                {{ store.nodeDetails.references }}
+              </fieldset>
+            </div>
           </div>
         </div>
         <button class="place_problem" @click="store.problemModal = true">Place request for more details</button>

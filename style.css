@@ -138,6 +138,7 @@
 
     .node_details a {
       color:white;
+      font-weight: bold;
     }
 
     .content-fade-up-animation {
@@ -493,16 +494,47 @@
       }
 
       .entity_indicator_details {
-        
+        margin-top: 0px;
       }
 
-      .view_indicator_details {
+      .entity_indicator_details > .individual > span {
+        border-bottom: 1px solid #c5fa9c;
+      }
+
+      button.view_indicator_details {
         background: black;
-        color: white;
-        border: 1px solid #c5fa9c;
+        color: #c5fa9c;
+        padding:0px;
+        line-height: 0px;
+        font-size: 26px;
+        font-weight: bold;
+        border: none;
+      }
+      button.view_indicator_details:hover {
+        cursor: pointer;
+        transform: scale(1.1);
       }
       .entity_indicator {
         display: flex;
         justify-content: space-between;
         margin-top: 8px;
       }
+      .entity_indicator_details>.individual  {
+        width: max(280px, 30vw);
+      }
+
+      .indicator_context {
+        background: #18332f;
+        padding: 2px 10px;
+      }
+      .all_indicator_contexts {
+        display: contents;
+      }
+
+      .indicator_configuration > .config_point {
+        margin-bottom: 4px;
+      }
+
+    .indicator_configuration > .config_point > span {
+      border-bottom: 1px solid #c5fa9c;
+    }
