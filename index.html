@@ -376,7 +376,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.1.5</div>
+  <div class="version_number">v. 0.1.6</div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
@@ -430,6 +430,7 @@
             <select id="regarding_asset_type" name="regarding_asset_type" v-model="store.nodeDetailsAssetType">
               <option value="entity">Entity</option>
               <option value="dataset">Dataset</option>
+              <option value="indicator">Indicator</option>
             </select>
           </div>
         </fieldset>
@@ -438,6 +439,7 @@
           <textarea name="message" rows="5" required></textarea>
         </fieldset>
         <input type="submit" value="Send">
+        <button class="discard_draft" @click="closeDetails">Discard draft</button>
       </form>
       <div class="wrapper" v-else>
         <div v-if="store.nodeDetails.error" class="details_error">

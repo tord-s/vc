@@ -551,3 +551,15 @@
     .not_empty_details fieldset.node_detail:first-of-type {
       margin-top: 10px;
     }
+
+    .discard_draft {
+      background: black;
+      color: white;
+      border: 2px solid #ff000044;
+      margin-top: 10px;
+      transition: all 0.4s;
+    }
+    .discard_draft:hover {
+      background: #ff000044;
+      cursor: pointer;
+    }
