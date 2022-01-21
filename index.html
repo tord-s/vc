@@ -376,7 +376,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.1.7</div>
+  <div class="version_number">v. 0.1.8</div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
@@ -627,7 +627,8 @@
           </div>
         </div>
       </div>
-      <button class="place_problem" @click="store.problemModal = true">Place request for more details</button>
+      <button class="place_problem" @click="store.problemModal = true" v-if="!store.problemModal">Place request for more
+        details</button>
     </div>
   </div>
   </div>
