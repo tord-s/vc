@@ -563,3 +563,38 @@
       background: #ff000044;
       cursor: pointer;
     }
+
+    .data_item {
+      display: flex;
+      max-width: max(290px, 35vw);
+    }
+
+    .data_item_symbol {
+      white-space: nowrap;
+      overflow: scroll;
+      display: inline-block; 
+    }
+    .data_item_symbol {
+      flex: 1;
+    }
+
+    .data_item_symbol::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .data_item_symbol {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+/* 
+    .data_grid_item_container {
+      display: grid;
+      grid-template-columns: auto auto auto;
+
+    }
+    .data_grid_container {
+      display: grid;
+      overflow-x: scroll;
+      max-width: max(290px, 35vw);
+    } */

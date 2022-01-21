@@ -376,7 +376,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.1.6</div>
+  <div class="version_number">v. 0.1.7</div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
@@ -547,72 +547,89 @@
               This Dataset is empty
             </div>
             <div class="not_empty_details" v-else>
-              <fieldset v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length > 0"
-                class="node_detail">
-                <legend>Compatible Entities:</legend>
-                <div v-for="item in store.nodeDetails.compatible_entities">
-                  <b class="further_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
-                    item.entity_name }}</b>
+              <fieldset v-if="store.nodeDetails.data && store.nodeDetails.data.length > 0" class="node_detail">
+                <legend>Data:</legend>
+
+                <div v-for="item in store.nodeDetails.data" class="data_item">
+                  <div class="data_item_symbol">{{ item.symbol }}</div>
+                  <div class="data_item_value">= {{ item.values[0] }} {{ item.unit }}</div>
                 </div>
-              </fieldset>
-              <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
-                class="node_detail">
-                <legend>Import References:</legend>
-                <div v-for=" item in store.nodeDetails.import_references">
-                  {{ item.symbol }}
-              </fieldset>
-              <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
-                class="node_detail">
-                <legend>Export References:</legend>
-                <div v-for=" item in store.nodeDetails.export_references">
-                  {{ item.symbol }}
-              </fieldset>
+
+                <!-- <div class="data_grid_container">
+                  <div v-for="item in store.nodeDetails.data" class="data_grid_item_container">
+                    <div class="data_grid_item">{{ item.symbol }}</div>
+                    <div class="data_grid_item">{{ item.values }}</div>
+                    <div class="data_grid_item">{{ item.unit }}</div>
+                  </div> -->
+
             </div>
-            <fieldset class="node_detail">
-              <legend>Dataset Business Contributors:</legend>
-              <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length > 0"
+              class="node_detail">
+              <legend>Compatible Entities:</legend>
+              <div v-for="item in store.nodeDetails.compatible_entities">
+                <b class="further_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
+                  item.entity_name }}</b>
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
+              class="node_detail">
+              <legend>Import References:</legend>
+              <div v-for=" item in store.nodeDetails.import_references">
+                {{ item.symbol }}
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
+              class="node_detail">
+              <legend>Export References:</legend>
+              <div v-for=" item in store.nodeDetails.export_references">
+                {{ item.symbol }}
             </fieldset>
           </div>
-          <div class="is_indicator" v-if="store.nodeDetailsAssetType === 'indicator'">
-            <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
+          <fieldset class="node_detail">
+            <legend>Dataset Business Contributors:</legend>
+            <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+          </fieldset>
+        </div>
+        <div class="is_indicator" v-if="store.nodeDetailsAssetType === 'indicator'">
+          <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
             && store.nodeDetails.import_references && store.nodeDetails.import_references.length < 1
             && store.nodeDetails.export_references && store.nodeDetails.export_references.length < 1">
-              <br>
-              This Indicator is empty
-            </div>
-            <div class="not_empty_details" v-else>
-              <fieldset v-if="store.nodeDetails.contexts && store.nodeDetails.contexts.length > 0" class="node_detail">
-                <legend>Contexts:</legend>
-                <div v-for="item in store.nodeDetails.contexts" class="all_indicator_contexts">
-                  <span class="indicator_context">{{ item }}</span>
-                </div>
-              </fieldset>
-              <fieldset v-if="store.nodeDetails.description" class="node_detail">
-                <legend>Description:</legend>
-                {{ store.nodeDetails.description }}
-              </fieldset>
-              <fieldset v-if="store.nodeDetails.aggregation_mode" class="node_detail indicator_configuration">
-                <legend>Configuration:</legend>
-                <div class="config_point">
-                  <span>Aggregation Mode:</span> {{ store.nodeDetails.aggregation_mode }}
-                </div>
-                <div class="config_point">
-                  <span>Data Type:</span> {{ store.nodeDetails.data_type }}
-                </div>
-                <div class="config_point">
-                  <span>Sustainablity Polarity:</span> {{ store.nodeDetails.sustainability_polarity }}
-                </div>
-              </fieldset>
-              <fieldset v-if="store.nodeDetails.references" class="node_detail">
-                <legend>References:</legend>
-                {{ store.nodeDetails.references }}
-              </fieldset>
-            </div>
+            <br>
+            This Indicator is empty
+          </div>
+          <div class="not_empty_details" v-else>
+            <fieldset v-if="store.nodeDetails.contexts && store.nodeDetails.contexts.length > 0" class="node_detail">
+              <legend>Contexts:</legend>
+              <div v-for="item in store.nodeDetails.contexts" class="all_indicator_contexts">
+                <span class="indicator_context">{{ item }}</span>
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.description" class="node_detail">
+              <legend>Description:</legend>
+              {{ store.nodeDetails.description }}
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.aggregation_mode" class="node_detail indicator_configuration">
+              <legend>Configuration:</legend>
+              <div class="config_point">
+                <span>Aggregation Mode:</span> {{ store.nodeDetails.aggregation_mode }}
+              </div>
+              <div class="config_point">
+                <span>Data Type:</span> {{ store.nodeDetails.data_type }}
+              </div>
+              <div class="config_point">
+                <span>Sustainablity Polarity:</span> {{ store.nodeDetails.sustainability_polarity }}
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.references" class="node_detail">
+              <legend>References:</legend>
+              {{ store.nodeDetails.references }}
+            </fieldset>
           </div>
         </div>
-        <button class="place_problem" @click="store.problemModal = true">Place request for more details</button>
       </div>
+      <button class="place_problem" @click="store.problemModal = true">Place request for more details</button>
     </div>
+  </div>
   </div>
 </body>
 
