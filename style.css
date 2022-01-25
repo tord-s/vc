@@ -400,10 +400,15 @@
       margin-right: 10px;
       font-size: 14px;
     }
-    #contact-form select {
+    #contact-form select,  #changeEvalEntity, div.change_eval > div > input[type=number],
+    #add_eval_dataset_select {
       background: black;
       color: white;
+      outline: none;
       border: 2px solid #c5fa9c;
+    }
+    #add_eval_dataset_select {
+      margin-top: 8px;
     }
     #contact-form > input[type=submit],  button.place_problem {
       background-color: black;

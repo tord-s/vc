@@ -446,7 +446,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.2.1</div>
+  <div class="version_number">v. 0.2.2</div>
   <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
   <div class="change_eval" v-if="store.changeEval">
     <button class="default_btn" @click="store.changeEval = false">Close</button>
@@ -464,13 +464,14 @@
             class="remove_eval_dataset">X</span></span>
 
       </div>
-      <button class="add_eval_dataset" v-if="!store.isAddingEvalDataset" @click="store.isAddingEvalDataset = true">Add
+      <button class="add_eval_dataset default_btn" v-if="!store.isAddingEvalDataset"
+        @click="store.isAddingEvalDataset = true">Add
         more</button>
       <div class="add_eval_dataset" v-if="store.isAddingEvalDataset">
         <select name="add_eval_dataset_select" id="add_eval_dataset_select" v-model="store.addEvalDataset">
           <option v-for="item in store.datasets">{{item.name}}</option>
         </select>
-        <button class="add_eval_dataset" @click=addEvalDataset>Add</button>
+        <button class="add_eval_dataset default_btn" @click=addEvalDataset>Add</button>
       </div>
     </div>
     <div class="field">
@@ -583,6 +584,10 @@
               This Entity is empty
             </div>
             <div class="not_empty_details" v-else>
+              <fieldset v-if="store.nodeDetailsName === 'Consumer'" class="node_detail">
+                <legend>Indicator Performance:</legend>
+                CO2_emission_aquaculture = 1.411 kgCO2e / kg_fish
+              </fieldset>
               <fieldset v-if="store.nodeDetails.entity_indicators && store.nodeDetails.entity_indicators.length > 0"
                 class="node_detail all_entity_indicators">
                 <legend>Entity Indicators:</legend>
