@@ -221,6 +221,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        overflow-y: hidden;
     }
     .loader {
         border: 8px solid black;
@@ -474,6 +475,10 @@
       /* width */
       ::-webkit-scrollbar {
         width: 5px;
+      }
+
+      .hide_scrollbar::-webkit-scrollbar {
+        width: 0px;
       }
 
       /* Track */
