@@ -17,8 +17,14 @@
   <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
   <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
 
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js">
-  </script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+  <script src="https://unpkg.com/klayjs@0.4.1/klay.js"></script>
+  <script src="https://unpkg.com/cytoscape-klay@3.1.2/cytoscape-klay.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js">  </script>
   <script type="text/javascript">
     (function () {
       emailjs.init("user_QuamyBFQke3BdMui1AXOm");
@@ -26,7 +32,7 @@
   </script>
 </head>
 
-<body>
+<body v-scope>
   <script type="module">
     import { createApp, reactive } from 'https://unpkg.com/petite-vue?module'
 
@@ -48,6 +54,20 @@
       showInfoMessage: false,
       infoMessage: "",
       viewIndicatorDetailsName: "",
+      datasets: [],
+      isAddingEvalDataset: false,
+      addEvalDataset: false,
+      requestHeaders: {
+        'Content-Type': 'application/json'
+      },
+      evalParameters: {
+        datasets: ["Fish_farming_defaults"],
+        fidelity_level: 30,
+        mode: "operation",
+        extra_data: {}
+      },
+      evalEntity: "Consumer",
+      changeEval: false,
       toggleShowData() {
         this.showData = !this.showData;
       },
@@ -89,256 +109,306 @@
           },
           function (error) { alert(error); }
         );
+      },
+      updateEval() {
+        store.loading = 1;
+        store.changeEval = false;
+        document.getElementById('loading').style['z-index'] = 1;
+        const getEval = new Promise(function (gotEval, noEval) {
+          axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+            .then(response => {
+              gotEval(response.data);
+            })
+        });
+
+        getEval.then(
+          function (value) {
+            console.log(value)
+            store.rawJSONFromApi = value;
+            store.main();
+            store.loading = 0
+            document.getElementById('loading').style['z-index'] = -1;
+          },
+          function (error) {
+            store.loading = 0;
+            document.getElementById('loading').style['z-index'] = -1;
+            alert(error);
+          }
+        );
+      },
+      main() {
+
+        // Converting JSON-encoded string to JS object
+        let graph = store.rawJSONFromApi.graph
+        let nodes = graph.nodes
+        let edges = graph.edges
+        let valueChainElements = []
+
+        for (const node in nodes) {
+          let node_data = nodes[node]
+          if (store.groupEntities) {
+            // valueChainElements.push({ data: { id: node, name: node_data.label,
+            // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            valueChainElements.push({
+              data: {
+                id: node, parent: node_data.parent, asset_type: node_data['meta_data'].type,
+                name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
+              }
+            })
+            // valueChainElements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4),
+            // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+          }
+          else {
+            valueChainElements.push({
+              data: {
+                id: node, name: node_data.label, asset_type: node_data['meta_data'].type,
+                color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
+              }
+            })
+          }
+        }
+
+        let start_id = store.originalStartID
+        for (const edge in edges) {
+          const edge_data = edges[edge]
+          valueChainElements.push({
+            data: {
+              id: start_id, desc: edge_data.relation,
+              source: edge_data.source, target: edge_data.target
+            }
+          })
+          start_id += 1
+        }
+
+        var cy = cytoscape({
+          container: document.getElementById('cy'),
+          elements: valueChainElements,
+          style: [
+            {
+              selector: 'node',
+              css: {
+                'label': 'data(name)',
+                'background-color': 'data(color)',
+                'border-color': 'black',
+                'shape': 'circle',
+                'cursor': 'pointer',
+                height: '50px',
+                width: '50px',
+                shape: 'square',
+                'border-width': '4px',
+                'border-color': 'data(color)'
+              }
+            },
+            {
+              selector: ':parent',
+              css: {
+                'text-valign': 'top',
+                'background-color': '#18332f',
+                'text-halign': 'center',
+                'padding': '30px',
+                'shape': 'square',
+                'border-width': '4px',
+                'border-color': '#18332f'
+              }
+            },
+            {
+              selector: 'edge',
+              css: {
+                'line-color': '#c5fa9c',
+                'label': 'data(desc)',
+                'curve-style': 'bezier',
+                'arrow-scale': '2',
+                'target-arrow-color': '#c5fa9c',
+                'target-arrow-shape': 'triangle'
+              }
+            },
+            {
+              selector: 'label',
+              style: {
+                'font-size': '22px',
+                'text-background-color': 'black',
+                'color': 'white',
+                'text-background-opacity': 1,
+                'text-margin-y': '-4px',
+                'z-compound-depth': 'top',
+              }
+            },
+            {
+              selector: ':parent > node',
+              style: {
+                'text-background-color': '#18332f',
+                'color': 'white',
+                'background-color': '#c5fa9c'
+              }
+            },
+            {
+              selector: 'node.highlight',
+              style: {
+                'border-color': 'white',
+                'border-width': '4px',
+                // 'font-size': '28px',
+                "transition-timing-function": 'ease-in-out',
+                "transition-duration": '0.3s',
+                "transition-property": 'border-width, border-color, font-size',
+              }
+            },
+            {
+              selector: 'node.highlight+label',
+              style: {
+                'font-weight': 'bold',
+              }
+            }
+          ],
+        });
+
+        cy.on('click', 'node', function (evt) {
+          let asset_type = (this.data().asset_type === "dataset") ? "dataset" : "entity"
+          store.nodeDetailsAssetType = asset_type
+          store.nodeDetailsName = this.data().name
+          store.getNodeDetails();
+        });
+
+        // Don't realyly use this as of now, but was cool
+        // cy.on('mouseover', 'node', function (evt) {
+        //   console.log('Mouseover ', this.data().name)
+        // });
+
+        // adds cursor on hover over nodes and class highlight
+        cy.on('mouseover', 'node', (event) => {
+          if (event.cy.container()) {
+            event.cy.container().style.cursor = 'pointer';
+          }
+          event.target.addClass('highlight');
+        })
+        cy.on('mouseout', 'node', (event) => {
+          if (event.cy.container()) {
+            event.cy.container().style.cursor = 'default';
+          }
+          event.target.removeClass('highlight');
+        })
+
+        const data_toggle = document.querySelector('#hide_data');
+        data_toggle.onclick = () => {
+          store.toggleShowData();
+          store.main();
+        };
+        hideData();
+
+        const entity_toggle = document.querySelector('#group_entities');
+        entity_toggle.onclick = () => {
+          store.toggleGroupEntities();
+          store.main();
+        };
+
+        function hideData() {
+          const dataset_nodes = cy.elements('node[color = "white"]')
+          const dataset_edges = cy.edges('[desc = "data"]');
+          if (!store.showData) {
+            cy.remove(dataset_nodes);
+            cy.remove(dataset_edges);
+            animate();
+          }
+          else {
+            cy.add(dataset_nodes);
+            cy.add(dataset_edges);
+            animate();
+          }
+        }
+
+        function getParent(target_id) {
+          for (let node in nodes) {
+            if (node === target_id) {
+              return nodes[node].parent
+            }
+          }
+          return -1
+        }
+
+        // Need to check if the edge has a source that is equal to the parent of the 
+        // target node and remove this in the group view
+        if (store.groupEntities) {
+          for (let i = 0; i < edges.length; i++) {
+            const edge = edges[i];
+            if (getParent(edge.target) === edge.source) {
+              const remove_query = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
+              cy.remove(cy.edges(remove_query))
+            }
+          }
+          animate();
+        }
+
+        // cy.use(klay)
+
+        function animate() {
+          var layout = cy.layout({
+            name: 'klay',
+            animate: true,
+            fit: true,
+            directed: true,
+            animationDuration: 800,
+            animationEasing: 'ease-in-out',
+            nodeDimensionsIncludeLabels: true,
+            klay: {
+              addUnnecessaryBendpoints: false,
+              direction: 'LEFT',
+              layoutHierarchy: true,
+              nodePlacement: 'INTERACTIVE',
+              spacing: 40,
+              inLayerSpacingFactor: 4,
+            }
+          });
+          layout.run();
+        }
       }
     })
 
     createApp({
       store,
       inizialize() {
-        function main() {
-          // Converting JSON-encoded string to JS object
-          let graph = JSON.parse(store.rawJSONFromApi).graph
-          let nodes = graph.nodes
-          let edges = graph.edges
-          let valueChainElements = []
-
-          for (const node in nodes) {
-            let node_data = nodes[node]
-            if (store.groupEntities) {
-              // valueChainElements.push({ data: { id: node, name: node_data.label,
-              // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-              valueChainElements.push({
-                data: {
-                  id: node, parent: node_data.parent, asset_type: node_data['meta_data'].type,
-                  name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
-                }
-              })
-              // valueChainElements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4),
-              // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
-            }
-            else {
-              valueChainElements.push({
-                data: {
-                  id: node, name: node_data.label, asset_type: node_data['meta_data'].type,
-                  color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
-                }
-              })
-            }
-          }
-
-          let start_id = store.originalStartID
-          for (const edge in edges) {
-            const edge_data = edges[edge]
-            valueChainElements.push({
-              data: {
-                id: start_id, desc: edge_data.relation,
-                source: edge_data.source, target: edge_data.target
-              }
-            })
-            start_id += 1
-          }
-
-          var cy = cytoscape({
-            container: document.getElementById('cy'),
-            elements: valueChainElements,
-            style: [
-              {
-                selector: 'node',
-                css: {
-                  'label': 'data(name)',
-                  'background-color': 'data(color)',
-                  'border-color': 'black',
-                  'shape': 'circle',
-                  'cursor': 'pointer',
-                  height: '50px',
-                  width: '50px',
-                  shape: 'square',
-                  'border-width': '4px',
-                  'border-color': 'data(color)'
-                }
-              },
-              {
-                selector: ':parent',
-                css: {
-                  'text-valign': 'top',
-                  'background-color': '#18332f',
-                  'text-halign': 'center',
-                  'padding': '30px',
-                  'shape': 'square',
-                  'border-width': '4px',
-                  'border-color': '#18332f'
-                }
-              },
-              {
-                selector: 'edge',
-                css: {
-                  'line-color': '#c5fa9c',
-                  'label': 'data(desc)',
-                  'curve-style': 'bezier',
-                  'arrow-scale': '2',
-                  'target-arrow-color': '#c5fa9c',
-                  'target-arrow-shape': 'triangle'
-                }
-              },
-              {
-                selector: 'label',
-                style: {
-                  'font-size': '22px',
-                  'text-background-color': 'black',
-                  'color': 'white',
-                  'text-background-opacity': 1,
-                  'text-margin-y': '-4px',
-                  'z-compound-depth': 'top',
-                }
-              },
-              {
-                selector: ':parent > node',
-                style: {
-                  'text-background-color': '#18332f',
-                  'color': 'white',
-                  'background-color': '#c5fa9c'
-                }
-              },
-              {
-                selector: 'node.highlight',
-                style: {
-                  'border-color': 'white',
-                  'border-width': '4px',
-                  // 'font-size': '28px',
-                  "transition-timing-function": 'ease-in-out',
-                  "transition-duration": '0.3s',
-                  "transition-property": 'border-width, border-color, font-size',
-                }
-              },
-              {
-                selector: 'node.highlight+label',
-                style: {
-                  'font-weight': 'bold',
-                }
-              }
-            ],
-          });
-
-          cy.on('click', 'node', function (evt) {
-            let asset_type = (this.data().asset_type === "dataset") ? "dataset" : "entity"
-            store.nodeDetailsAssetType = asset_type
-            store.nodeDetailsName = this.data().name
-            store.getNodeDetails();
-          });
-
-          // Don't realyly use this as of now, but was cool
-          // cy.on('mouseover', 'node', function (evt) {
-          //   console.log('Mouseover ', this.data().name)
-          // });
-
-          // adds cursor on hover over nodes and class highlight
-          cy.on('mouseover', 'node', (event) => {
-            if (event.cy.container()) {
-              event.cy.container().style.cursor = 'pointer';
-            }
-            event.target.addClass('highlight');
-          })
-          cy.on('mouseout', 'node', (event) => {
-            if (event.cy.container()) {
-              event.cy.container().style.cursor = 'default';
-            }
-            event.target.removeClass('highlight');
-          })
-
-          const data_toggle = document.querySelector('#hide_data');
-          data_toggle.onclick = () => {
-            store.toggleShowData();
-            main();
-          };
-          hideData();
-
-          const entity_toggle = document.querySelector('#group_entities');
-          entity_toggle.onclick = () => {
-            store.toggleGroupEntities();
-            main();
-          };
-
-          function hideData() {
-            const dataset_nodes = cy.elements('node[color = "white"]')
-            const dataset_edges = cy.edges('[desc = "data"]');
-            if (!store.showData) {
-              cy.remove(dataset_nodes);
-              cy.remove(dataset_edges);
-              animate();
-            }
-            else {
-              cy.add(dataset_nodes);
-              cy.add(dataset_edges);
-              animate();
-            }
-          }
-
-          function getParent(target_id) {
-            for (let node in nodes) {
-              if (node === target_id) {
-                return nodes[node].parent
-              }
-            }
-            return -1
-          }
-
-          // Need to check if the edge has a source that is equal to the parent of the 
-          // target node and remove this in the group view
-          if (store.groupEntities) {
-            for (let i = 0; i < edges.length; i++) {
-              const edge = edges[i];
-              if (getParent(edge.target) === edge.source) {
-                const remove_query = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
-                cy.remove(cy.edges(remove_query))
-              }
-            }
-            animate();
-          }
-
-          function animate() {
-            var layout = cy.layout({
-              name: 'dagre',
-              animate: true,
-              animationDuration: 800,
-              animationEasing: 'ease-in-out',
-              rankDir: 'RL',
-              edgeSep: 50,
-              nodeSep: 150,
-              rankSep: 120,
-              padding: 30,
-              nodeDimensionsIncludeLabels: true,
-            });
-            layout.run();
-          }
-          setTimeout(
-            animate, 800);
-        }
-
         async function start() {
           const getEval = new Promise(function (gotEval, noEval) {
-            setTimeout(function () {
-              const req = new XMLHttpRequest();
-              req.open('GET', "eval.json");
-              req.onload = function () {
-                if (req.status == 200) {
-                  gotEval(req.response);
-                }
-              };
-              req.send();
-            }, 1800);
+
+            // const req = new XMLHttpRequest();
+            // req.open('GET', "eval.json");
+            // req.onload = function () {
+            //   if (req.status == 200) {
+            //     gotEval(req.response);
+            //   }
+            // };
+            // req.send();
+
+            axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+              .then(response => {
+                gotEval(response.data);
+              })
           });
 
           getEval.then(
             function (value) {
+              console.log(value)
               store.rawJSONFromApi = value;
-              main();
+              store.main();
               store.loading = 0
               document.getElementById('loading').style['z-index'] = -1;
             },
             function (error) { alert(error); }
           );
+
+          axios.get(store.apiBasePath + "/data/datasets", { headers: store.requestHeaders })
+            .then(response => {
+              store.datasets = response.data;
+            })
+
         }
         start();
+      },
+      addEvalDataset() {
+        const dataset_select = document.getElementById('add_eval_dataset_select')
+        const dataset_name = dataset_select.options[dataset_select.selectedIndex].text;
+        store.evalParameters.datasets.push(dataset_name);
+      },
+      removeEvalDataset(item) {
+        store.evalParameters.datasets.splice(store.evalParameters.datasets.indexOf(item), 1);
       },
       getFurtherDetails(name, asset_type) {
         store.nodeDetailsName = name;
@@ -376,7 +446,47 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.1.9</div>
+  <div class="version_number">v. 0.2.1</div>
+  <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
+  <div class="change_eval" v-if="store.changeEval">
+    <button class="default_btn" @click="store.changeEval = false">Close</button>
+    <div class="field">
+      <label>Entity</label>
+      <select id="changeEvalEntity" name="regarding_asset_type" v-model="store.evalEntity">
+        <option value="Consumer">Consumer</option>
+        <option value="Fish_farming">Fish_farming</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Datasets</label>
+      <div v-for="item in store.evalParameters.datasets" class="eval_add_datsets_list_item all_indicator_contexts">
+        <span class="indicator_context">{{ item }}<span @click="removeEvalDataset(item)"
+            class="remove_eval_dataset">X</span></span>
+
+      </div>
+      <button class="add_eval_dataset" v-if="!store.isAddingEvalDataset" @click="store.isAddingEvalDataset = true">Add
+        more</button>
+      <div class="add_eval_dataset" v-if="store.isAddingEvalDataset">
+        <select name="add_eval_dataset_select" id="add_eval_dataset_select" v-model="store.addEvalDataset">
+          <option v-for="item in store.datasets">{{item.name}}</option>
+        </select>
+        <button class="add_eval_dataset" @click=addEvalDataset>Add</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Fidelity Level</label>
+      <input type="number" name="fidelity_level" min="0" max="100" v-model="store.evalParameters.fidelity_level">
+    </div>
+    <div class="field">
+      <label>Mode</label>
+      <select id="changeEvalEntity" name="regarding_asset_type" v-model="store.evalParameters.mode">
+        <option value="operation">Operation</option>
+        <option value="build">Build</option>
+        <option value="termination">Termination</option>
+      </select>
+    </div>
+    <button @click="store.updateEval" class="default_btn">Update eval</button>
+  </div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
     <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"

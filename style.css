@@ -17,9 +17,62 @@
     .version_number {
       position: absolute;
       color: white;
-      right: 0;
+      right: 10px;
+      top: 10px;
       padding: 6px;
       font-size: 12px;
+    }
+
+    button.change_eval {
+      position: absolute;
+      color: white;
+      left: 10px;
+      top: 10px;
+      padding: 4px;
+      font-size: 12px;
+      width: fit-content;
+    }
+
+    button.default_btn {
+      color: white;
+      background: black;
+      border: 2px solid #c5fa9c;
+    }
+  
+    button.default_btn:hover {
+      cursor: pointer;
+      color: black;
+      background: #c5fa9c;
+    }
+
+    div.change_eval {
+      width: fit-content;
+      padding: 10px;
+      margin: auto;
+      border: 2px solid #c5fa9c;
+      background: black;
+      position: fixed;
+      z-index: 1;
+      color: white;
+      margin: 10px;
+    }
+
+    div.change_eval > div.field {
+      margin: 10px 0px;
+    }
+
+    .eval_add_datsets_list_item {
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .remove_eval_dataset {
+      color: red;
+      margin-left: 10px;
+    }
+
+    .remove_eval_dataset:hover {
+      cursor:pointer;
     }
 
     .controls {
@@ -98,7 +151,7 @@
         height: 100vh;
         position: absolute;
         z-index: 2;
-        background-color: #44444455;
+        background-color: #44444477;
         display: flex;
         transition: all 0.5s;
     }
