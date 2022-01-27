@@ -110,6 +110,17 @@
           function (error) { alert(error); }
         );
       },
+      async getNodeEval(entityName) {
+        store.loadingNode = store.showDetails = true;
+        const getEval = new Promise(function (gotEval, noEval) {
+          axios.post(store.apiBasePath + "/models/" + entityName + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+            .then(response => {
+              store.loadingNode = false;
+              console.log(response.data);
+              store.nodeDetails = response.data;
+            })
+        });
+      },
       updateEval() {
         store.loading = 1;
         store.changeEval = false;
@@ -575,6 +586,12 @@
               </span>
               <span v-else>N/A</span>
             </small>
+          </div>
+          <button class="default_btn" @click="store.getNodeEval(store.nodeDetails.name)"> See Performance</button>
+          <div class="entity_performance">
+            <div v-for="item, name in store.nodeDetails.standard_indicators">
+              {{ name }} {{item.value}} {{item.unit}}
+            </div>
           </div>
           <p class="node_details_node_name"><b>{{store.nodeDetails.name}} </b>details:</p>
           <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
