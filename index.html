@@ -46,6 +46,7 @@
       valueChainElements: [],
       showDetails: false,
       nodeDetails: '',
+      evalDetails: '',
       nodeDetailsName: '',
       nodeDetailsAssetType: '',
       apiBasePath: 'https://v02.platform.terravera.world',
@@ -88,27 +89,74 @@
           asset_type_url = '/library/indicators/'
         }
         store.loadingNode = store.showDetails = true;
-        const getDetails = new Promise(function (detailsResolved, detailsNotFound) {
-          const req = new XMLHttpRequest();
-          req.open('GET', store.apiBasePath + asset_type_url + store.nodeDetailsName);
-          req.onload = function () {
-            if (req.status == 200) {
-              detailsResolved(req.response);
-              store.loadingNode = false;
-            } else {
-              store.loadingNode = false;
-              store.nodeDetails = { error: "An error occured" }
-            }
-          };
-          req.send();
-        });
-        getDetails.then(
-          function (value) {
-            store.nodeDetails = JSON.parse(value)
-            console.log(store.nodeDetails)
-          },
-          function (error) { alert(error); }
-        );
+
+
+        try {
+          // const res = await Promise.all([
+          //   axios.get(store.apiBasePath + asset_type_url + store.nodeDetailsName)
+          //     .then(response => {
+          //       store.nodeDetails = response.data
+          //       console.log(store.nodeDetails)
+          //     }),
+          //   axios.post(store.apiBasePath + "/models/" + entityName + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+          //     .then(response => {
+          //       store.loadingNode = false;
+          //       console.log(response.data);
+          //       store.nodeDetails = response.data;
+          //     })
+          // ]);
+          if (store.nodeDetailsAssetType === 'entity') {
+            Promise.all([axios.get(store.apiBasePath + asset_type_url + store.nodeDetailsName),
+            axios.post(store.apiBasePath + "/models/" + store.nodeDetailsName + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })])
+              .then(values => Promise.all(values.map(value => value.data)))
+              .then(values => {
+                store.nodeDetails = values[0];
+                console.log('Eval: ', values[1])
+                store.evalDetails = values[1];
+                store.loadingNode = false;
+              });
+          } else {
+            Promise.all([axios.get(store.apiBasePath + asset_type_url + store.nodeDetailsName)])
+              .then(values => Promise.all(values.map(value => value.data)))
+              .then(values => {
+                store.nodeDetails = values[0];
+                store.loadingNode = false;
+              });
+          }
+
+
+        } catch {
+          throw Error("Promise failed");
+        }
+        // getDetails.then(
+        //   function (value) {
+        //     store.nodeDetails = JSON.parse(value)
+        //     console.log(store.nodeDetails)
+        //   },
+        //   function (error) { alert(error); }
+        // );
+
+        // const getDetails = new Promise(function (detailsResolved, detailsNotFound) {
+        //   const req = new XMLHttpRequest();
+        //   req.open('GET', store.apiBasePath + asset_type_url + store.nodeDetailsName);
+        //   req.onload = function () {
+        //     if (req.status == 200) {
+        //       detailsResolved(req.response);
+        //       store.loadingNode = false;
+        //     } else {
+        //       store.loadingNode = false;
+        //       store.nodeDetails = { error: "An error occured" }
+        //     }
+        //   };
+        //   req.send();
+        // });
+        // getDetails.then(
+        //   function (value) {
+        //     store.nodeDetails = JSON.parse(value)
+        //     console.log(store.nodeDetails)
+        //   },
+        //   function (error) { alert(error); }
+        // );
       },
       async getNodeEval(entityName) {
         store.loadingNode = store.showDetails = true;
@@ -125,12 +173,6 @@
         store.loading = 1;
         store.changeEval = false;
         document.getElementById('loading').style['z-index'] = 1;
-        const getEval = new Promise(function (gotEval, noEval) {
-          axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
-            .then(response => {
-              gotEval(response.data);
-            })
-        });
 
         getEval.then(
           function (value) {
@@ -379,11 +421,13 @@
         async function start() {
           const getEval = new Promise(function (gotEval, noEval) {
 
+
+            // GET LOCAL 
             // const req = new XMLHttpRequest();
             // req.open('GET', "eval.json");
             // req.onload = function () {
             //   if (req.status == 200) {
-            //     gotEval(req.response);
+            //     gotEval(JSON.parse(req.response));
             //   }
             // };
             // req.send();
@@ -457,7 +501,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.2.2</div>
+  <div class="version_number">v. 0.3.0</div>
   <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
   <div class="change_eval" v-if="store.changeEval">
     <button class="default_btn" @click="store.changeEval = false">Close</button>
@@ -587,13 +631,37 @@
               <span v-else>N/A</span>
             </small>
           </div>
-          <button class="default_btn" @click="store.getNodeEval(store.nodeDetails.name)"> See Performance</button>
+          <!-- <button class="default_btn" @click="store.getNodeEval(store.nodeDetails.name)"> See Performance</button> -->
           <div class="entity_performance">
-            <div v-for="item, name in store.nodeDetails.standard_indicators">
-              {{ name }} {{item.value}} {{item.unit}}
+            <h4 class="node_section_header">Indicator Performance</h4>
+            <div class="empty" v-if="Object.keys(store.evalDetails.local_indicators) < 1 &&
+            Object.keys(store.evalDetails.standard_indicators) < 1">
+              Indicator Performance is empty because the Entity has no Indicators
+            </div>
+            <div class="indicator_performance" v-else>
+              <div v-for="item, name in store.evalDetails.standard_indicators" class="data_item">
+                <div class="data_item_symbol">
+                  {{ name }} =
+                </div>
+                <div class="data_item_value">
+                  <span v-if="item.value.length<5">{{ item.value }}</span>
+                  <span v-else>{{ item.value.toString().substring(0,5)}}</span>
+                  {{item.unit}}
+                </div>
+              </div>
+              <div v-for="item, name in store.evalDetails.local_indicators" class="data_item">
+                <div class="data_item_symbol">
+                  {{ name }} =
+                </div>
+                <div class="data_item_value">
+                  <span v-if="item.value.length<5">{{ item.value }}</span>
+                  <span v-else>{{ item.value.toString().substring(0,5)}}</span>
+                  {{item.unit}}
+                </div>
+              </div>
             </div>
           </div>
-          <p class="node_details_node_name"><b>{{store.nodeDetails.name}} </b>details:</p>
+          <h4 class="node_details_node_name node_section_header"><b>{{store.nodeDetails.name}} </b>details:</h4>
           <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
             <div class="empty" v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length < 1 &&
              store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length < 1">
@@ -601,10 +669,10 @@
               This Entity is empty
             </div>
             <div class="not_empty_details" v-else>
-              <fieldset v-if="store.nodeDetailsName === 'Consumer'" class="node_detail">
+              <!-- <fieldset v-if="store.nodeDetailsName === 'Consumer'" class="node_detail">
                 <legend>Indicator Performance:</legend>
                 CO2_emission_aquaculture = 5.081 kgCO2e / kg_fish
-              </fieldset>
+              </fieldset> -->
               <fieldset v-if="store.nodeDetails.entity_indicators && store.nodeDetails.entity_indicators.length > 0"
                 class="node_detail all_entity_indicators">
                 <legend>Entity Indicators:</legend>
@@ -668,6 +736,8 @@
               <fieldset class="node_detail">
                 <legend>Entity Contributor Acknowledgments:</legend>
                 <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+                <a v-if="store.nodeDetailsName === 'Central_Feeding_System'" href="https://scaleaq.no" target="_blank"
+                  rel="noopener noreferrer">ScaleAQ</a>
               </fieldset>
             </div>
           </div>

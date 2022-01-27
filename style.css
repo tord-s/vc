@@ -180,6 +180,7 @@
         position: absolute;
         width: max(40vw, 350px);
         left: 30vw;
+        font-size: smaller;
         background: black;
         color: white;
         bottom: 10px;
@@ -661,3 +662,17 @@
       overflow-x: scroll;
       max-width: max(290px, 35vw);
     } */
+
+    .entity_performance {
+      margin-bottom: 20px;
+    }
+
+    .entity_performance > .empty {
+      margin-top: 0px;
+    }
+
+    .node_section_header {
+      border-bottom: 2px solid #c5fa9c;
+      font-size: medium;
+      margin-bottom: 15px;
+    }
