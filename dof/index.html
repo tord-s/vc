@@ -7,8 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TERRAVERA™ | Visualizing the value chain </title>
   <meta name="description" content="Visualizing the value chain of Evaluations of Entities in the TERRAVERA™ Platform">
-  <link rel="stylesheet" href="https://raw.githubusercontent.com/tord-s/vc/main/style.css>
-  <link rel=" icon" type="image/png" href="https://tord-s.github.io/vc/favicon.png">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/png" href="https://tord-s.github.io/vc/favicon.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
     integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -406,8 +406,8 @@
               direction: 'LEFT',
               layoutHierarchy: true,
               nodePlacement: 'INTERACTIVE',
-              spacing: 40,
-              inLayerSpacingFactor: 4,
+              spacing: 80,
+              inLayerSpacingFactor: 1,
             }
           });
           layout.run();
@@ -423,19 +423,19 @@
 
 
             // GET LOCAL 
-            // const req = new XMLHttpRequest();
-            // req.open('GET', "eval.json");
-            // req.onload = function () {
-            //   if (req.status == 200) {
-            //     gotEval(JSON.parse(req.response));
-            //   }
-            // };
-            // req.send();
+            const req = new XMLHttpRequest();
+            req.open('GET', "eval_dof.json");
+            req.onload = function () {
+              if (req.status == 200) {
+                gotEval(JSON.parse(req.response));
+              }
+            };
+            req.send();
 
-            axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
-              .then(response => {
-                gotEval(response.data);
-              })
+            // axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+            //   .then(response => {
+            //     gotEval(response.data);
+            //   })
           });
 
           getEval.then(
@@ -501,7 +501,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.3.0</div>
+  <div class="version_number">v. 0.3.1</div>
   <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
   <div class="change_eval" v-if="store.changeEval">
     <button class="default_btn" @click="store.changeEval = false">Close</button>

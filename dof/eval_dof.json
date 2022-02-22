@@ -1,0 +1,161 @@
+{
+    "graph": {
+        "nodes": {
+            "Operation of ship": {
+                "label": "Operation of ship",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Operation of ship",
+                    "entity_id": 39,
+                    "type": "instance"
+                }
+            },
+            "Electricity_onshore_production": {
+                "label": "Electricity_onshore_production",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Electricity_onshore_production",
+                    "entity_id": 44,
+                    "type": "instance"
+                }
+            },
+            "Maintenance": {
+                "label": "Maintenance",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Maintenance",
+                    "entity_id": 40,
+                    "type": "instance"
+                }
+            },
+            "Maintenance_hour": {
+                "label": "Maintenance_hour",
+                "parent": "Maintenance",
+                "meta_data": {
+                    "instance_id": "Maintenance_hour",
+                    "entity_id": 40,
+                    "type": "instance"
+                }
+            },
+            "Construction_company": {
+                "label": "Construction_company",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Construction_company",
+                    "entity_id": 38,
+                    "type": "instance"
+                }
+            },
+            "Construction_of_ship": {
+                "label": "Construction_of_ship",
+                "parent": "Construction_company",
+                "meta_data": {
+                    "instance_id": "Construction_of_ship",
+                    "entity_id": 38,
+                    "type": "instance"
+                }
+            },
+            "Fuel_production": {
+                "label": "Fuel_production",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Fuel_production",
+                    "entity_id": 43,
+                    "type": "instance"
+                }
+            },
+            "Tonne_fuel1": {
+                "label": "Tonne_fuel",
+                "parent": "Fuel_production",
+                "meta_data": {
+                    "instance_id": "Tonne_fuel",
+                    "entity_id": 43,
+                    "type": "instance"
+                }
+            },
+            "Bunkering": {
+                "label": "Bunkering",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Bunkering",
+                    "entity_id": 42,
+                    "type": "instance"
+                }
+            },
+            "Tonne_fuel2": {
+                "label": "Tonne_fuel",
+                "parent": "Bunkering",
+                "meta_data": {
+                    "instance_id": "Tonne_fuel",
+                    "entity_id": 42,
+                    "type": "instance"
+                }
+            },
+            "Dead_vessel": {
+                "label": "Dead_vessel",
+                "parent": null,
+                "meta_data": {
+                    "instance_id": "Dead_vessel",
+                    "entity_id": 45,
+                    "type": "instance"
+                }
+            },
+            "kWh_Electricity": {
+                "label": "kWh_Electricity",
+                "parent": "Electricity_onshore_production",
+                "meta_data": {
+                    "instance_id": "kWh_Electricity",
+                    "entity_id": 53,
+                    "type": "instance"
+                }
+            }
+        },
+        "edges": [
+            {
+                "source": "Electricity_onshore_production",
+                "target": "kWh_Electricity",
+                "relation": "provider"
+            },
+            {
+                "source": "kWh_Electricity",
+                "target": "Operation of ship",
+                "relation": "import"
+            },
+            {
+                "source": "Maintenance",
+                "target": "Maintenance_hour",
+                "relation": "provider"
+            },
+            {
+                "source": "Maintenance_hour",
+                "target": "Operation of ship",
+                "relation": "import"
+            },
+            {
+                "source": "Construction_company",
+                "target": "Construction_of_ship",
+                "relation": "provider"
+            },
+            {
+                "source": "Construction_of_ship",
+                "target": "Operation of ship",
+                "relation": "import"
+            },
+            {
+                "source": "Tonne_fuel1",
+                "target": "Tonne_fuel2",
+                "relation": "transpose"
+            },
+            {
+                "source": "Tonne_fuel2",
+                "target": "Operation of ship",
+                "relation": "import"
+            },
+            {
+                "source": "Operation of ship",
+                "target": "Dead_vessel",
+                "relation": "import"
+            }
+        ]
+    }
+}
