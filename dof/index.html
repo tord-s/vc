@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TERRAVERA™ | Visualizing the value chain </title>
+  <meta name="description" content="Visualizing the value chain of Evaluations of Entities in the TERRAVERA™ Platform">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="https://tord-s.github.io/vc/favicon.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.min.js"
+    integrity="sha512-cjmYAonfXK+azDmWqvnqq8xmygHRHqVI7S0zuRxQnvcYVeoakwthRX6pPKoXfG1oIjDvMUtteRV9PhQjJwKWxQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.3.2/cytoscape-dagre.min.js"></script>
+  <script src="https://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+  <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+  <script src="https://unpkg.com/klayjs@0.4.1/klay.js"></script>
+  <script src="https://unpkg.com/cytoscape-klay@3.1.2/cytoscape-klay.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js">  </script>
+  <script type="text/javascript">
+    (function () {
+      emailjs.init("user_QuamyBFQke3BdMui1AXOm");
+    })();
+  </script>
+</head>
+
+<body v-scope>
+  <script type="module">
+    import { createApp, reactive } from 'https://unpkg.com/petite-vue?module'
+
+    const store = reactive({
+      showData: false,
+      groupEntities: true,
+      loading: 1,
+      loadingNode: true,
+      rawJSONFromApi: "",
+      originalStartID: 42000000,
+      valueChainElements: [],
+      showDetails: false,
+      nodeDetails: '',
+      evalDetails: '',
+      nodeDetailsName: '',
+      nodeDetailsAssetType: '',
+      apiBasePath: 'https://v02.platform.terravera.world',
+      goBackList: [],
+      problemModal: 0,
+      showInfoMessage: false,
+      infoMessage: "",
+      viewIndicatorDetailsName: "",
+      datasets: [],
+      isAddingEvalDataset: false,
+      addEvalDataset: false,
+      requestHeaders: {
+        'Content-Type': 'application/json'
+      },
+      evalParameters: {
+        datasets: ["Fish_farming_defaults"],
+        fidelity_level: 30,
+        mode: "operation",
+        extra_data: {}
+      },
+      evalEntity: "Consumer",
+      changeEval: false,
+      toggleShowData() {
+        this.showData = !this.showData;
+      },
+      toggleGroupEntities() {
+        this.groupEntities = !this.groupEntities;
+      },
+      async getNodeDetails() {
+        if (store.goBackList.length === 0) {
+          store.goBackList.push({ name: store.nodeDetailsName, type: store.nodeDetailsAssetType })
+        }
+        let asset_type_url = ''
+        if (store.nodeDetailsAssetType === 'entity') {
+          asset_type_url = '/library/entities/'
+        } else if (store.nodeDetailsAssetType === 'dataset') {
+          asset_type_url = '/data/datasets/'
+        }
+        else if (store.nodeDetailsAssetType === 'indicator') {
+          asset_type_url = '/library/indicators/'
+        }
+        store.loadingNode = store.showDetails = true;
+
+
+        try {
+          // const res = await Promise.all([
+          //   axios.get(store.apiBasePath + asset_type_url + store.nodeDetailsName)
+          //     .then(response => {
+          //       store.nodeDetails = response.data
+          //       console.log(store.nodeDetails)
+          //     }),
+          //   axios.post(store.apiBasePath + "/models/" + entityName + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+          //     .then(response => {
+          //       store.loadingNode = false;
+          //       console.log(response.data);
+          //       store.nodeDetails = response.data;
+          //     })
+          // ]);
+          if (store.nodeDetailsAssetType === 'entity') {
+            Promise.all([axios.get(store.apiBasePath + asset_type_url + store.nodeDetailsName),
+            axios.post(store.apiBasePath + "/models/" + store.nodeDetailsName + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })])
+              .then(values => Promise.all(values.map(value => value.data)))
+              .then(values => {
+                store.nodeDetails = values[0];
+                console.log('Eval: ', values[1])
+                store.evalDetails = values[1];
+                store.loadingNode = false;
+              });
+          } else {
+            Promise.all([axios.get(store.apiBasePath + asset_type_url + store.nodeDetailsName)])
+              .then(values => Promise.all(values.map(value => value.data)))
+              .then(values => {
+                store.nodeDetails = values[0];
+                store.loadingNode = false;
+              });
+          }
+
+
+        } catch {
+          throw Error("Promise failed");
+        }
+        // getDetails.then(
+        //   function (value) {
+        //     store.nodeDetails = JSON.parse(value)
+        //     console.log(store.nodeDetails)
+        //   },
+        //   function (error) { alert(error); }
+        // );
+
+        // const getDetails = new Promise(function (detailsResolved, detailsNotFound) {
+        //   const req = new XMLHttpRequest();
+        //   req.open('GET', store.apiBasePath + asset_type_url + store.nodeDetailsName);
+        //   req.onload = function () {
+        //     if (req.status == 200) {
+        //       detailsResolved(req.response);
+        //       store.loadingNode = false;
+        //     } else {
+        //       store.loadingNode = false;
+        //       store.nodeDetails = { error: "An error occured" }
+        //     }
+        //   };
+        //   req.send();
+        // });
+        // getDetails.then(
+        //   function (value) {
+        //     store.nodeDetails = JSON.parse(value)
+        //     console.log(store.nodeDetails)
+        //   },
+        //   function (error) { alert(error); }
+        // );
+      },
+      async getNodeEval(entityName) {
+        store.loadingNode = store.showDetails = true;
+        const getEval = new Promise(function (gotEval, noEval) {
+          axios.post(store.apiBasePath + "/models/" + entityName + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+            .then(response => {
+              store.loadingNode = false;
+              console.log(response.data);
+              store.nodeDetails = response.data;
+            })
+        });
+      },
+      updateEval() {
+        store.loading = 1;
+        store.changeEval = false;
+        document.getElementById('loading').style['z-index'] = 1;
+
+        getEval.then(
+          function (value) {
+            console.log(value)
+            store.rawJSONFromApi = value;
+            store.main();
+            store.loading = 0
+            document.getElementById('loading').style['z-index'] = -1;
+          },
+          function (error) {
+            store.loading = 0;
+            document.getElementById('loading').style['z-index'] = -1;
+            alert(error);
+          }
+        );
+      },
+      main() {
+
+        // Converting JSON-encoded string to JS object
+        let graph = store.rawJSONFromApi.graph
+        let nodes = graph.nodes
+        let edges = graph.edges
+        let valueChainElements = []
+
+        for (const node in nodes) {
+          let node_data = nodes[node]
+          if (store.groupEntities) {
+            // valueChainElements.push({ data: { id: node, name: node_data.label,
+            // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+            valueChainElements.push({
+              data: {
+                id: node, parent: node_data.parent, asset_type: node_data['meta_data'].type,
+                name: node_data.label, color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
+              }
+            })
+            // valueChainElements.push({ data: { id: node, name: node_data.label + ' ' + node.slice(-4),
+            // color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white" } })
+          }
+          else {
+            valueChainElements.push({
+              data: {
+                id: node, name: node_data.label, asset_type: node_data['meta_data'].type,
+                color: (node_data['meta_data'].type === "instance") ? "#c5fa9c" : "white"
+              }
+            })
+          }
+        }
+
+        let start_id = store.originalStartID
+        for (const edge in edges) {
+          const edge_data = edges[edge]
+          valueChainElements.push({
+            data: {
+              id: start_id, desc: edge_data.relation,
+              source: edge_data.source, target: edge_data.target
+            }
+          })
+          start_id += 1
+        }
+
+        var cy = cytoscape({
+          container: document.getElementById('cy'),
+          elements: valueChainElements,
+          style: [
+            {
+              selector: 'node',
+              css: {
+                'label': 'data(name)',
+                'background-color': 'data(color)',
+                'border-color': 'black',
+                'shape': 'circle',
+                'cursor': 'pointer',
+                height: '50px',
+                width: '50px',
+                shape: 'square',
+                'border-width': '4px',
+                'border-color': 'data(color)'
+              }
+            },
+            {
+              selector: ':parent',
+              css: {
+                'text-valign': 'top',
+                'background-color': '#18332f',
+                'text-halign': 'center',
+                'padding': '30px',
+                'shape': 'square',
+                'border-width': '4px',
+                'border-color': '#18332f'
+              }
+            },
+            {
+              selector: 'edge',
+              css: {
+                'line-color': '#c5fa9c',
+                'label': 'data(desc)',
+                'curve-style': 'bezier',
+                'arrow-scale': '2',
+                'target-arrow-color': '#c5fa9c',
+                'target-arrow-shape': 'triangle'
+              }
+            },
+            {
+              selector: 'label',
+              style: {
+                'font-size': '22px',
+                'text-background-color': 'black',
+                'color': 'white',
+                'text-background-opacity': 1,
+                'text-margin-y': '-4px',
+                'z-compound-depth': 'top',
+              }
+            },
+            {
+              selector: ':parent > node',
+              style: {
+                'text-background-color': '#18332f',
+                'color': 'white',
+                'background-color': '#c5fa9c'
+              }
+            },
+            {
+              selector: 'node.highlight',
+              style: {
+                'border-color': 'white',
+                'border-width': '4px',
+                // 'font-size': '28px',
+                "transition-timing-function": 'ease-in-out',
+                "transition-duration": '0.3s',
+                "transition-property": 'border-width, border-color, font-size',
+              }
+            },
+            {
+              selector: 'node.highlight+label',
+              style: {
+                'font-weight': 'bold',
+              }
+            }
+          ],
+        });
+
+        cy.on('click', 'node', function (evt) {
+          let asset_type = (this.data().asset_type === "dataset") ? "dataset" : "entity"
+          store.nodeDetailsAssetType = asset_type
+          store.nodeDetailsName = this.data().name
+          store.getNodeDetails();
+        });
+
+        // Don't realyly use this as of now, but was cool
+        // cy.on('mouseover', 'node', function (evt) {
+        //   console.log('Mouseover ', this.data().name)
+        // });
+
+        // adds cursor on hover over nodes and class highlight
+        cy.on('mouseover', 'node', (event) => {
+          if (event.cy.container()) {
+            event.cy.container().style.cursor = 'pointer';
+          }
+          event.target.addClass('highlight');
+        })
+        cy.on('mouseout', 'node', (event) => {
+          if (event.cy.container()) {
+            event.cy.container().style.cursor = 'default';
+          }
+          event.target.removeClass('highlight');
+        })
+
+        const data_toggle = document.querySelector('#hide_data');
+        data_toggle.onclick = () => {
+          store.toggleShowData();
+          store.main();
+        };
+        hideData();
+
+        const entity_toggle = document.querySelector('#group_entities');
+        entity_toggle.onclick = () => {
+          store.toggleGroupEntities();
+          store.main();
+        };
+
+        function hideData() {
+          const dataset_nodes = cy.elements('node[color = "white"]')
+          const dataset_edges = cy.edges('[desc = "data"]');
+          if (!store.showData) {
+            cy.remove(dataset_nodes);
+            cy.remove(dataset_edges);
+            animate();
+          }
+          else {
+            cy.add(dataset_nodes);
+            cy.add(dataset_edges);
+            animate();
+          }
+        }
+
+        function getParent(target_id) {
+          for (let node in nodes) {
+            if (node === target_id) {
+              return nodes[node].parent
+            }
+          }
+          return -1
+        }
+
+        // Need to check if the edge has a source that is equal to the parent of the 
+        // target node and remove this in the group view
+        if (store.groupEntities) {
+          for (let i = 0; i < edges.length; i++) {
+            const edge = edges[i];
+            if (getParent(edge.target) === edge.source) {
+              const remove_query = '[target = "' + edge.target + '"][source = "' + edge.source + '"]'
+              cy.remove(cy.edges(remove_query))
+            }
+          }
+          animate();
+        }
+
+        // cy.use(klay)
+
+        function animate() {
+          var layout = cy.layout({
+            name: 'klay',
+            animate: true,
+            fit: true,
+            directed: true,
+            animationDuration: 800,
+            animationEasing: 'ease-in-out',
+            nodeDimensionsIncludeLabels: true,
+            klay: {
+              addUnnecessaryBendpoints: false,
+              direction: 'LEFT',
+              layoutHierarchy: true,
+              nodePlacement: 'INTERACTIVE',
+              spacing: 40,
+              inLayerSpacingFactor: 4,
+            }
+          });
+          layout.run();
+        }
+      }
+    })
+
+    createApp({
+      store,
+      inizialize() {
+        async function start() {
+          const getEval = new Promise(function (gotEval, noEval) {
+
+
+            // GET LOCAL 
+            // const req = new XMLHttpRequest();
+            // req.open('GET', "eval.json");
+            // req.onload = function () {
+            //   if (req.status == 200) {
+            //     gotEval(JSON.parse(req.response));
+            //   }
+            // };
+            // req.send();
+
+            axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
+              .then(response => {
+                gotEval(response.data);
+              })
+          });
+
+          getEval.then(
+            function (value) {
+              console.log(value)
+              store.rawJSONFromApi = value;
+              store.main();
+              store.loading = 0
+              document.getElementById('loading').style['z-index'] = -1;
+            },
+            function (error) { alert(error); }
+          );
+
+          axios.get(store.apiBasePath + "/data/datasets", { headers: store.requestHeaders })
+            .then(response => {
+              store.datasets = response.data;
+            })
+
+        }
+        start();
+      },
+      addEvalDataset() {
+        const dataset_select = document.getElementById('add_eval_dataset_select')
+        const dataset_name = dataset_select.options[dataset_select.selectedIndex].text;
+        store.evalParameters.datasets.push(dataset_name);
+      },
+      removeEvalDataset(item) {
+        store.evalParameters.datasets.splice(store.evalParameters.datasets.indexOf(item), 1);
+      },
+      getFurtherDetails(name, asset_type) {
+        store.nodeDetailsName = name;
+        store.nodeDetailsAssetType = asset_type
+        store.goBackList.push({ name: name, type: asset_type })
+        store.getNodeDetails()
+      },
+      goBackInDetails() {
+        store.goBackList.pop()
+        const backstep = store.goBackList.slice(-1)[0]
+        store.nodeDetailsName = backstep.name;
+        store.nodeDetailsAssetType = backstep.type
+        store.getNodeDetails()
+      },
+      sendEmail(e) {
+        emailjs.sendForm('service_p0a6238', 'template_vh5mew7', e.target)
+          .then(function () {
+            store.showInfoMessage = true;
+            store.infoMessage = "Problem successfully added!"
+            store.showDetails = false
+            store.problemModal = false;
+          }, function (error) {
+            store.showInfoMessage = true;
+            store.infoMessage = "An error occured ⚠️"
+            store.showDetails = false
+            store.problemModal = false;
+            console.log('FAILED...', error);
+          });
+      },
+      closeDetails() {
+        store.showDetails = false;
+        store.problemModal = false;
+        store.goBackList = [];
+      }
+    }
+    ).mount()
+  </script>
+  <div class="version_number">v. 0.3.0</div>
+  <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
+  <div class="change_eval" v-if="store.changeEval">
+    <button class="default_btn" @click="store.changeEval = false">Close</button>
+    <div class="field">
+      <label>Entity</label>
+      <select id="changeEvalEntity" name="regarding_asset_type" v-model="store.evalEntity">
+        <option value="Consumer">Consumer</option>
+        <option value="Fish_farming">Fish_farming</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Datasets</label>
+      <div v-for="item in store.evalParameters.datasets" class="eval_add_datsets_list_item all_indicator_contexts">
+        <span class="indicator_context">{{ item }}<span @click="removeEvalDataset(item)"
+            class="remove_eval_dataset">X</span></span>
+
+      </div>
+      <button class="add_eval_dataset default_btn" v-if="!store.isAddingEvalDataset"
+        @click="store.isAddingEvalDataset = true">Add
+        more</button>
+      <div class="add_eval_dataset" v-if="store.isAddingEvalDataset">
+        <select name="add_eval_dataset_select" id="add_eval_dataset_select" v-model="store.addEvalDataset">
+          <option v-for="item in store.datasets">{{item.name}}</option>
+        </select>
+        <button class="add_eval_dataset default_btn" @click=addEvalDataset>Add</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Fidelity Level</label>
+      <input type="number" name="fidelity_level" min="0" max="100" v-model="store.evalParameters.fidelity_level">
+    </div>
+    <div class="field">
+      <label>Mode</label>
+      <select id="changeEvalEntity" name="regarding_asset_type" v-model="store.evalParameters.mode">
+        <option value="operation">Operation</option>
+        <option value="build">Build</option>
+        <option value="termination">Termination</option>
+      </select>
+    </div>
+    <button @click="store.updateEval" class="default_btn">Update eval</button>
+  </div>
+  <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
+  <div id="loading" v-scope opacity="store.loading">
+    <img class="loading_logo" src="https://tord-s.github.io/vc/formue_logo.png" alt="Formuesforvaltning logo"
+      width="420px" height="100px">
+  </div>
+  <div class="controls" v-scope>
+    <div class="param">
+      <h4 class="group_entities_toggle">Data:</h4>
+      <label class="switch">
+        <input class="switch-input" type="checkbox" name="hide_data" id="hide_data" unchecked="store.showData" />
+        <span class="switch-label" data-on="Hide" data-off="Show"></span> <span class="switch-handle"></span>
+      </label>
+      <h4 class="group_entities_toggle">Entities:</h4>
+      <label class="switch">
+        <input class="switch-input" type="checkbox" name="group_entities" id="group_entities"
+          checked="store.groupEntities">
+        <span class="switch-label" data-on="Ungroup" data-off="Group"></span> <span class="switch-handle"></span>
+      </label>
+    </div>
+    <div class="explainations">
+      <p><i><b>Transposing</b></i> an Entity means to put the Entity in a new context. For instance when a product
+        moves from one processing step to another.</p>
+      <p>An <i><b>import</b></i> signifies a relationship where one Entity depends on another. For instance a car
+        depends on the metal of which it constitutes, or a consumer depends on food.</p>
+    </div>
+  </div>
+  <div id="cy" v-scope @vue:mounted="inizialize()"></div>
+  <div class="node_details content-fade-up-animation" v-scope v-if="store.showDetails">
+    <div class="loading" v-if="store.loadingNode">
+      <div class="loader"></div>
+    </div>
+    <div class="node_details_content" v-else>
+      <form id="contact-form" v-if="store.problemModal" v-scope @submit.prevent="sendEmail">
+        <fieldset class="node_detail form_section">
+          <legend>About you:</legend>
+          <div class="about_you_desc">
+            <!-- <label>Name</label> -->
+            <input type="text" name="user_name" placeholder="Name">
+            <!-- <label>Email</label> -->
+            <input type="email" name="user_email" required placeholder="Email">
+          </div>
+        </fieldset>
+        <fieldset class="node_detail form_section">
+          <legend>Regarding:</legend>
+          <div class="regarding_desc">
+            <!-- <label>Name</label> -->
+            <input type="text" name="regarding_name" v-model="store.nodeDetailsName" placeholder="Name">
+          </div>
+          <div class="regarding_desc form_section">
+            <label for="regarding_asset_type">Which is a:</label>
+            <select id="regarding_asset_type" name="regarding_asset_type" v-model="store.nodeDetailsAssetType">
+              <option value="entity">Entity</option>
+              <option value="dataset">Dataset</option>
+              <option value="indicator">Indicator</option>
+            </select>
+          </div>
+        </fieldset>
+        <fieldset class="node_detail form_section">
+          <legend>Problem description:</legend>
+          <textarea name="message" rows="5" required></textarea>
+        </fieldset>
+        <input type="submit" value="Send">
+        <button class="discard_draft" @click="closeDetails">Discard draft</button>
+      </form>
+      <div class="wrapper" v-else>
+        <div v-if="store.nodeDetails.error" class="details_error">
+          Unable to get details ⚠️<br>
+          <a href="mailto:tord.softeland@terravera.world">
+            Send email to developer 📧
+          </a>
+        </div>
+        <div v-else>
+          <div class="top_line_details">
+            <div class="btns">
+              <button v-if="store.goBackList.length > 1" class="close_node_details go_back_list_btn"
+                @click="goBackInDetails">Go
+                back</button>
+              <button class="close_node_details" @click="closeDetails">Close</button>
+            </div>
+            <small>Last edit:
+              <span
+                v-if="store.nodeDetails.datetime_last_changed != null">{{store.nodeDetails.datetime_last_changed}}</span>
+              <span v-else-if="store.nodeDetails.last_changed != null">
+                <start>{{store.nodeDetails.last_changed}}</start>
+              </span>
+              <span v-else>N/A</span>
+            </small>
+          </div>
+          <!-- <button class="default_btn" @click="store.getNodeEval(store.nodeDetails.name)"> See Performance</button> -->
+          <div class="entity_performance">
+            <h4 class="node_section_header">Indicator Performance</h4>
+            <div class="empty" v-if="Object.keys(store.evalDetails.local_indicators) < 1 &&
+            Object.keys(store.evalDetails.standard_indicators) < 1">
+              Indicator Performance is empty because the Entity has no Indicators
+            </div>
+            <div class="indicator_performance" v-else>
+              <div v-for="item, name in store.evalDetails.standard_indicators" class="data_item">
+                <div class="data_item_symbol">
+                  {{ name }} =
+                </div>
+                <div class="data_item_value">
+                  <span v-if="item.value.length<5">{{ item.value }}</span>
+                  <span v-else>{{ item.value.toString().substring(0,5)}}</span>
+                  {{item.unit}}
+                </div>
+              </div>
+              <div v-for="item, name in store.evalDetails.local_indicators" class="data_item">
+                <div class="data_item_symbol">
+                  {{ name }} =
+                </div>
+                <div class="data_item_value">
+                  <span v-if="item.value.length<5">{{ item.value }}</span>
+                  <span v-else>{{ item.value.toString().substring(0,5)}}</span>
+                  {{item.unit}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <h4 class="node_details_node_name node_section_header"><b>{{store.nodeDetails.name}} </b>details:</h4>
+          <div class="is_entity" v-if="store.nodeDetailsAssetType === 'entity'">
+            <div class="empty" v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length < 1 &&
+             store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length < 1">
+              <br>
+              This Entity is empty
+            </div>
+            <div class="not_empty_details" v-else>
+              <!-- <fieldset v-if="store.nodeDetailsName === 'Consumer'" class="node_detail">
+                <legend>Indicator Performance:</legend>
+                CO2_emission_aquaculture = 5.081 kgCO2e / kg_fish
+              </fieldset> -->
+              <fieldset v-if="store.nodeDetails.entity_indicators && store.nodeDetails.entity_indicators.length > 0"
+                class="node_detail all_entity_indicators">
+                <legend>Entity Indicators:</legend>
+                <div v-for="item in store.nodeDetails.entity_indicators">
+                  <div class="entity_indicator">
+                    <b class="further_details" @click="getFurtherDetails(item.indicator_name, 'indicator')">
+                      {{item.indicator_name }} </b>
+                    <button class="view_indicator_details" v-if="item.indicator_name !== store.viewIndicatorDetailsName"
+                      @click="store.viewIndicatorDetailsName = item.indicator_name">+</button>
+                    <button class="view_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName"
+                      @click="store.viewIndicatorDetailsName = ''">-</button>
+                  </div>
+                  <ul class="entity_indicator_details" v-if="item.indicator_name === store.viewIndicatorDetailsName">
+                    <li class="individual"><span>Expression:</span> {{item.expression }}</li>
+                    <li class="individual"><span>Mode:</span> {{item.mode }}</li>
+                    <li class="individual"><span>Fidelity Level:</span> {{item.max_fidelity_level }}</li>
+                  </ul>
+                </div>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.entity_inherits && store.nodeDetails.entity_inherits.length > 0"
+                class="node_detail">
+                <legend>Entity Inherits:</legend>
+                <div v-for="item in store.nodeDetails.entity_inherits">
+                  <b class="further_details" @click="getFurtherDetails(item.inherited_entity_name, 'entity')">{{
+                    item.inherited_entity_name }}</b> with
+                  priority
+                  {{
+                  item.priority }}
+                </div>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.dataset_pointers && store.nodeDetails.dataset_pointers.length > 0"
+                class="node_detail">
+                <legend>Dataset Pointers:</legend>
+                <div v-for=" item in store.nodeDetails.dataset_pointers">
+                  {{ item.name }} with default <b class="further_details"
+                    @click="getFurtherDetails(item.default_dataset_name, 'dataset')"> {{ item.default_dataset_name
+                    }}</b>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.entity_imports && store.nodeDetails.entity_imports.length > 0"
+                class="node_detail">
+                <legend>Entity Imports:</legend>
+                <div v-for=" item in store.nodeDetails.entity_imports">
+                  Imports <b class="further_details"
+                    @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
+                    item.deliverable_entity_name }}</b> from <b class="further_details"
+                    @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{ item.provider_entity_name }}</b>
+              </fieldset>
+              <fieldset v-if="store.nodeDetails.entity_exports && store.nodeDetails.entity_exports.length > 0"
+                class="node_detail">
+                <legend>Entity Exports:</legend>
+                <div v-for=" item in store.nodeDetails.entity_exports">
+                  Imports <b class="further_details"
+                    @click="getFurtherDetails(item.deliverable_entity_name, 'entity')">{{
+                    item.deliverable_entity_name }}</b>
+                  <span v-if="item.provider_entity_name">
+                    from <b class="further_details" @click="getFurtherDetails(item.provider_entity_name, 'entity')">{{
+                      item.provider_entity_name }}</b>
+                  </span>
+                  <span v-else>without provider</span>
+              </fieldset>
+              <fieldset class="node_detail">
+                <legend>Entity Contributor Acknowledgments:</legend>
+                <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+                <a v-if="store.nodeDetailsName === 'Central_Feeding_System'" href="https://scaleaq.no" target="_blank"
+                  rel="noopener noreferrer">ScaleAQ</a>
+              </fieldset>
+            </div>
+          </div>
+          <div class="is_dataset" v-if="store.nodeDetailsAssetType === 'dataset'">
+            <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
+          && store.nodeDetails.import_references && store.nodeDetails.import_references.length < 1
+          && store.nodeDetails.export_references && store.nodeDetails.export_references.length < 1">
+              <br>
+              This Dataset is empty
+            </div>
+            <div class="not_empty_details" v-else>
+              <fieldset v-if="store.nodeDetails.data && store.nodeDetails.data.length > 0" class="node_detail">
+                <legend>Data:</legend>
+
+                <div v-for="item in store.nodeDetails.data" class="data_item">
+                  <div class="data_item_symbol">{{ item.symbol }}</div>
+                  <div class="data_item_value">= {{ item.values[0] }} {{ item.unit }}</div>
+                </div>
+
+                <!-- <div class="data_grid_container">
+                  <div v-for="item in store.nodeDetails.data" class="data_grid_item_container">
+                    <div class="data_grid_item">{{ item.symbol }}</div>
+                    <div class="data_grid_item">{{ item.values }}</div>
+                    <div class="data_grid_item">{{ item.unit }}</div>
+                  </div> -->
+
+            </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length > 0"
+              class="node_detail">
+              <legend>Compatible Entities:</legend>
+              <div v-for="item in store.nodeDetails.compatible_entities">
+                <b class="further_details" @click="getFurtherDetails(item.entity_name, 'entity')">{{
+                  item.entity_name }}</b>
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.import_references && store.nodeDetails.import_references.length > 0"
+              class="node_detail">
+              <legend>Import References:</legend>
+              <div v-for=" item in store.nodeDetails.import_references">
+                {{ item.symbol }}
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.export_references && store.nodeDetails.export_references.length > 0"
+              class="node_detail">
+              <legend>Export References:</legend>
+              <div v-for=" item in store.nodeDetails.export_references">
+                {{ item.symbol }}
+            </fieldset>
+            <fieldset class="node_detail">
+              <legend>Dataset Contributor Acknowledgments:</legend>
+              <a href="http://formue.no" target="_blank" rel="noopener noreferrer">Formuesforvaltning</a>
+            </fieldset>
+          </div>
+        </div>
+        <div class="is_indicator" v-if="store.nodeDetailsAssetType === 'indicator'">
+          <div class="empty" v-if="store.nodeDetails.compatible_entities && store.nodeDetails.compatible_entities.length < 1
+            && store.nodeDetails.import_references && store.nodeDetails.import_references.length < 1
+            && store.nodeDetails.export_references && store.nodeDetails.export_references.length < 1">
+            <br>
+            This Indicator is empty
+          </div>
+          <div class="not_empty_details" v-else>
+            <fieldset v-if="store.nodeDetails.contexts && store.nodeDetails.contexts.length > 0" class="node_detail">
+              <legend>Contexts:</legend>
+              <div v-for="item in store.nodeDetails.contexts" class="all_indicator_contexts">
+                <span class="indicator_context">{{ item }}</span>
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.description" class="node_detail">
+              <legend>Description:</legend>
+              {{ store.nodeDetails.description }}
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.aggregation_mode" class="node_detail indicator_configuration">
+              <legend>Configuration:</legend>
+              <div class="config_point">
+                <span>Aggregation Mode:</span> {{ store.nodeDetails.aggregation_mode }}
+              </div>
+              <div class="config_point">
+                <span>Data Type:</span> {{ store.nodeDetails.data_type }}
+              </div>
+              <div class="config_point">
+                <span>Sustainablity Polarity:</span> {{ store.nodeDetails.sustainability_polarity }}
+              </div>
+            </fieldset>
+            <fieldset v-if="store.nodeDetails.references" class="node_detail">
+              <legend>References:</legend>
+              {{ store.nodeDetails.references }}
+            </fieldset>
+          </div>
+        </div>
+      </div>
+      <button class="place_problem" @click="store.problemModal = true" v-if="!store.problemModal">Place request for more
+        details</button>
+    </div>
+  </div>
+  </div>
+</body>
+
+
+</html>
