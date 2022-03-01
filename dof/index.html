@@ -67,7 +67,7 @@
         mode: "operation",
         extra_data: {}
       },
-      evalEntity: "Consumer",
+      evalEntity: "Dead_vessel",
       changeEval: false,
       toggleShowData() {
         this.showData = !this.showData;
@@ -423,24 +423,24 @@
 
 
             // GET LOCAL 
-            const req = new XMLHttpRequest();
-            req.open('GET', "eval_dof.json");
-            req.onload = function () {
-              if (req.status == 200) {
-                gotEval(JSON.parse(req.response));
-              }
-            };
-            req.send();
+            // const req = new XMLHttpRequest();
+            // req.open('GET', "eval_dof.json");
+            // req.onload = function () {
+            //   if (req.status == 200) {
+            //     gotEval(JSON.parse(req.response));
+            //   }
+            // };
+            // req.send();
 
-            // axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
-            //   .then(response => {
-            //     gotEval(response.data);
-            //   })
+            axios.get("https://v02.platform.terravera.world/models/Dead_vessel/evaluations/3088?evaluation_mode=dynamic", { headers: store.requestHeaders })
+              .then(response => {
+                gotEval(response.data.results)
+              })
           });
 
           getEval.then(
             function (value) {
-              console.log(value)
+              console.log(value.graph)
               store.rawJSONFromApi = value;
               store.main();
               store.loading = 0
@@ -501,7 +501,7 @@
     }
     ).mount()
   </script>
-  <div class="version_number">v. 0.3.1</div>
+  <div class="version_number">v. 0.3.2</div>
   <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
   <div class="change_eval" v-if="store.changeEval">
     <button class="default_btn" @click="store.changeEval = false">Close</button>
