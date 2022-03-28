@@ -37,6 +37,53 @@
     import { createApp, reactive } from 'https://unpkg.com/petite-vue?module'
 
     const store = reactive({
+      paths: {
+        "None": {
+          valuechain_url: "https://v02.platform.terravera.world/models/Consumer/evaluations/3878?evaluation_mode=dynamic",
+          logo_url: "https://raw.githubusercontent.com/tord-s/vc/v03/formue_logo.png",
+          use_hierarchy: true,
+          evalParameters: {
+            datasets: ["Fish_farming_defaults"],
+            fidelity_level: 30,
+            mode: "operation",
+            extra_data: {}
+          },
+        },
+        "formue": {
+          valuechain_url: "https://v02.platform.terravera.world/models/Consumer/evaluations/3878?evaluation_mode=dynamic",
+          logo_url: "https://raw.githubusercontent.com/tord-s/vc/v03/formue_logo.png",
+          use_hierarchy: true,
+          evalParameters: {
+            datasets: ["Fish_farming_defaults"],
+            fidelity_level: 30,
+            mode: "operation",
+            extra_data: {}
+          },
+        },
+        "dof": {
+          valuechain_url: "https://v02.platform.terravera.world/models/Ship_owner_company/evaluations/3882?evaluation_mode=static",
+          logo_url: "https://tord-s.github.io/vc/dof_logo.png",
+          use_hierarchy: false,
+          evalParameters: {
+            datasets: ["Fish_farming_defaults"],
+            fidelity_level: 30,
+            mode: "operation",
+            extra_data: {}
+          },
+        },
+        "dof_ammonia": {
+          valuechain_url: "https://v02.platform.terravera.world/models/Ship_owner_company/evaluations/3884?evaluation_mode=static",
+          logo_url: "https://tord-s.github.io/vc/dof_logo.png",
+          use_hierarchy: false,
+          evalParameters: {
+            datasets: ["ammonia"],
+            fidelity_level: 30,
+            mode: "operation",
+            extra_data: {}
+          },
+        },
+      },
+      q_id: "None",
       showData: false,
       groupEntities: true,
       loading: 1,
@@ -61,12 +108,7 @@
       requestHeaders: {
         'Content-Type': 'application/json'
       },
-      evalParameters: {
-        datasets: ["Fish_farming_defaults"],
-        fidelity_level: 30,
-        mode: "operation",
-        extra_data: {}
-      },
+      evalParameters: {},
       evalEntity: "Dead_vessel",
       changeEval: false,
       toggleShowData() {
@@ -261,7 +303,8 @@
                 'padding': '30px',
                 'shape': 'square',
                 'border-width': '4px',
-                'border-color': '#18332f'
+                'border-color': '#18332f',
+                'z-index': 1
               }
             },
             {
@@ -291,7 +334,8 @@
               style: {
                 'text-background-color': '#18332f',
                 'color': 'white',
-                'background-color': '#c5fa9c'
+                'background-color': '#c5fa9c',
+                'z-index': 1000
               }
             },
             {
@@ -404,10 +448,11 @@
             klay: {
               addUnnecessaryBendpoints: false,
               direction: 'LEFT',
-              layoutHierarchy: true,
+              layoutHierarchy: store.paths[store.q_id].use_hierarchy,
               nodePlacement: 'INTERACTIVE',
               spacing: 80,
               inLayerSpacingFactor: 1,
+              thoroughness: 10
             }
           });
           layout.run();
@@ -419,6 +464,18 @@
       store,
       inizialize() {
         async function start() {
+          const path = window.location.search.replace("index.html", "");
+
+          let q_id = new URLSearchParams(window.location.search).get("id")
+          try {
+            const len = q_id.length
+          } catch (error) {
+            q_id = "None"
+          }
+          store.q_id = q_id
+          const url_to_id = store.paths[q_id].valuechain_url
+          store.evalParameters = store.paths[q_id].evalParameters
+          console.log(url_to_id)
           const getEval = new Promise(function (gotEval, noEval) {
 
 
@@ -432,7 +489,8 @@
             // };
             // req.send();
 
-            axios.get("https://v02.platform.terravera.world/models/Dead_vessel/evaluations/3088?evaluation_mode=dynamic", { headers: store.requestHeaders })
+
+            axios.get(url_to_id, { headers: store.requestHeaders })
               .then(response => {
                 gotEval(response.data.results)
               })
@@ -546,7 +604,7 @@
   </div>
   <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
   <div id="loading" v-scope opacity="store.loading">
-    <img class="loading_logo" src="https://tord-s.github.io/vc/dof_logo.png" alt="Logo" width="420px" height="100px">
+    <img class="loading_logo" :src="store.paths[store.q_id].logo_url" alt="Logo" width="420px" height="100px">
   </div>
   <div class="controls" v-scope>
     <div class="param">

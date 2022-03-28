@@ -434,6 +434,7 @@
 
             axios.post(store.apiBasePath + "/models/" + store.evalEntity + "/evaluations/", store.evalParameters, { headers: store.requestHeaders })
               .then(response => {
+                console.log(response)
                 gotEval(response.data);
               })
           });
