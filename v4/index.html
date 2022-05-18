@@ -72,6 +72,17 @@
                         extra_data: {}
                     },
                 },
+                "temp_dof": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Dead_vessel/evaluations/4679?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/dof_logo.png",
+                    use_hierarchy: false,
+                    evalParameters: {
+                        datasets: ["DOF"],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
                 "dof_ammonia": {
                     valuechain_url: "https://v02.platform.terravera.world/models/Ship_owner_company/evaluations/3884?evaluation_mode=static",
                     logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/dof_logo.png",
@@ -582,7 +593,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.5</div>
+    <div class="version_number">v. 4.0.6</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
