@@ -139,11 +139,11 @@
                     },
                 },
                 "aksel_2": {
-                    valuechain_url: "https://v02.platform.terravera.world/models/Wind_turbine_operator/evaluations/6551?evaluation_mode=dynamic",
+                    valuechain_url: "https://v02.platform.terravera.world/models/Wind_turbine_operator/evaluations/6551",
                     logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
                     use_hierarchy: true,
                     evalParameters: {
-                        datasets: [""],
+                        datasets: [],
                         fidelity_level: 30,
                         mode: "operation",
                         extra_data: {}
@@ -626,7 +626,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.9</div>
+    <div class="version_number">v. 4.0.10</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
