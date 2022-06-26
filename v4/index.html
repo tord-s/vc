@@ -160,6 +160,17 @@
                         extra_data: {}
                     },
                 },
+                "aksel_4": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Container_vessel_operator/evaluations/8906?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
                 "aksel_tutorial": {
                     valuechain_url: "https://v02.platform.terravera.world/models/Apple_destination/evaluations/8196?evaluation_mode=dynamic",
                     logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
@@ -648,7 +659,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.13</div>
+    <div class="version_number">v. 4.0.14</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
