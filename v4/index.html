@@ -73,11 +73,11 @@
                     },
                 },
                 "temp_dof": {
-                    valuechain_url: "https://v02.platform.terravera.world/models/Dead_vessel/evaluations/4679?evaluation_mode=dynamic",
+                    valuechain_url: "https://v02.platform.terravera.world/models/Dead_vessel/evaluations/2841?evaluation_mode=dynamic",
                     logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/dof_logo.png",
                     use_hierarchy: false,
                     evalParameters: {
-                        datasets: ["Shipping_company_default"],
+                        datasets: ["Shipping_company_default", "Test_hull_type", "Skandi_Vega_Fuel_Consumption"],
                         fidelity_level: 30,
                         mode: "operation",
                         extra_data: {}
@@ -659,7 +659,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.16</div>
+    <div class="version_number">v. 4.0.17</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
