@@ -215,6 +215,39 @@
                         extra_data: {}
                     },
                 },
+                "geothermal": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Geothermal_power_plant_operator/evaluations/10592?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "hydropower": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Hydropower_plant_operator/evaluations/10596?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "solar": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Solar_farm_operator/evaluations/10597?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
             },
             q_id: "None",
             showData: false,
@@ -692,7 +725,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.19</div>
+    <div class="version_number">v. 4.0.20</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
