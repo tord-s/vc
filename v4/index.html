@@ -215,8 +215,30 @@
                         extra_data: {}
                     },
                 },
+                "aksel_8": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Port_operator_Rotterdam/evaluations/10739?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
                 "aksel_tutorial": {
                     valuechain_url: "https://v02.platform.terravera.world/models/Apple_destination/evaluations/8196?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "tutorial_apple_example": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Apple_destination/evaluations/10727?evaluation_mode=dynamic",
                     logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
                     use_hierarchy: true,
                     evalParameters: {
@@ -736,7 +758,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.21</div>
+    <div class="version_number">v. 4.0.22</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
