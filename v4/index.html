@@ -304,6 +304,7 @@
             datasets: [],
             isAddingEvalDataset: false,
             addEvalDataset: false,
+            userGetUrl: "",
             requestHeaders: {
                 'Content-Type': 'application/json'
             },
@@ -411,25 +412,28 @@
                 });
             },
             updateEval() {
-                store.loading = 1;
-                store.changeEval = false;
+                store.loading = 1
                 document.getElementById('loading').style['z-index'] = 1;
+                const url_to_id = store.userGetUrl
+                const getEval = new Promise(function (gotEval, noEval) {
+                    axios.get(url_to_id, { headers: store.requestHeaders })
+                        .then(response => {
+                            gotEval(response.data.results)
+                        })
+                });
 
                 getEval.then(
                     function (value) {
-                        console.log(value)
+                        console.log(value.graph)
                         store.rawJSONFromApi = value;
                         store.main();
                         store.loading = 0
                         document.getElementById('loading').style['z-index'] = -1;
                     },
-                    function (error) {
-                        store.loading = 0;
-                        document.getElementById('loading').style['z-index'] = -1;
-                        alert(error);
-                    }
+                    function (error) { alert(error); }
                 );
             },
+
             main() {
 
                 // Converting JSON-encoded string to JS object
@@ -758,12 +762,17 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.0.22</div>
+    <div class="version_number">v. 4.1.0</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
         <b> 👷‍♂️ Warning: Feature WIP</b>
         <div class="field">
+            <label>GET url</label>
+            <input type="text" name="changeGetUrl" id="changeGetUrl" v-model="store.userGetUrl">
+        </div>
+        <button @click="store.updateEval" class="default_btn">Update eval</button>
+        <!-- <div class="field">
             <label>Entity</label>
             <select id="changeEvalEntity" name="regarding_asset_type" v-model="store.evalEntity">
                 <option value="Consumer">Consumer</option>
@@ -799,8 +808,7 @@
                 <option value="build">Build</option>
                 <option value="termination">Termination</option>
             </select>
-        </div>
-        <button @click="store.updateEval" class="default_btn">Update eval</button>
+        </div> -->
     </div>
     <div class="info_message" v-scope v-if="store.showInfoMessage">{{store.infoMessage}}</div>
     <div id="loading" v-scope opacity="store.loading">
