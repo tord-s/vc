@@ -650,7 +650,7 @@
                         nodeDimensionsIncludeLabels: true,
                         klay: {
                             addUnnecessaryBendpoints: false,
-                            direction: 'LEFT',
+                            direction: 'RIGHT',
                             layoutHierarchy: store.paths[store.q_id].use_hierarchy,
                             nodePlacement: 'INTERACTIVE',
                             spacing: 80,
@@ -762,7 +762,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.1.0</div>
+    <div class="version_number">v. 4.1.1</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
