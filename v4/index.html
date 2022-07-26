@@ -281,6 +281,61 @@
                         extra_data: {}
                     },
                 },
+                "Geothermal_model": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Power_grid_from_geothermal/evaluations/11360?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "Hydro_model": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Power_grid_from_hydropower/evaluations/11361?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "Wave_model": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Power_grid_from_waveenergy/evaluations/11363?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "Solar_model": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Power_grid_from_solar/evaluations/11368?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                },
+                "Bio_model": {
+                    valuechain_url: "https://v02.platform.terravera.world/models/Power_grid_from_bioenergy/evaluations/11369?evaluation_mode=dynamic",
+                    logo_url: "https://raw.githubusercontent.com/tord-s/vc/static/tvf_logo.png",
+                    use_hierarchy: true,
+                    evalParameters: {
+                        datasets: [],
+                        fidelity_level: 30,
+                        mode: "operation",
+                        extra_data: {}
+                    },
+                }
             },
             q_id: "None",
             showData: false,
@@ -762,7 +817,7 @@
         }
         ).mount()
     </script>
-    <div class="version_number">v. 4.1.1</div>
+    <div class="version_number">v. 4.1.2</div>
     <button class="change_eval default_btn" @click="store.changeEval = true">Change Evaluation</button>
     <div class="change_eval" v-if="store.changeEval">
         <button class="default_btn" @click="store.changeEval = false">Close</button>
